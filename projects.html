@@ -1,0 +1,39 @@
+<head>
+  <title>Project Overview</title>
+  <script src="scripts/main.js"> </script>
+  <script defer src="scripts/projects.js"> </script>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+  <header>
+    <span id="left-header-items">
+      <h1 id="home-logo"> API Proxy </h1>
+    </span>
+    <span id="right-header-items">
+      <a href="home.html">Home</a>
+      <a href="projects.html">Projects</a>
+      <a href="account.html">Account</a>
+    </span>
+  </header>
+
+  <div id="new-project-container" class="list-container">
+    <h2> New Key: </h2>
+    <form id="new-project-form" class="new-form">
+      <label for="new-project-name">Name: </label>
+      <input name="name" id="new-project-name" placeholder="name">
+      <br>
+      <label for="new-project-description">Description: </label>
+      <input name="description" id="new-project-description" placeholder="name">
+      <input type="submit" value="Create Key">
+    </form>
+
+  </div>
+
+  <div id="project-list-container" class="list-container">
+    <h2> Projects: </h2>
+    <ol id="project-list">
+
+    </ol>
+  </div>
+</body>
