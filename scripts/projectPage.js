@@ -40,6 +40,7 @@ function updateKeyList() {
   for (key of userData.projects[currentProject].keys) {
     let keyItemEl = document.createElement("li");
     keyItemEl.classList.add("project-list-item");
+    keyItemEl.classList.add("key-list-item");
 
     let keyNameEl = document.createElement("h3");
     // keyNameEl.classList.add("key-entry-item");

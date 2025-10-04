@@ -35,13 +35,14 @@ header {
 
 body {
   background-color: var(--primary-background-color);
+  font-family: monospace;
 }
 
 
 .list-container {
   background-color: var(--secondary-background-color);
   border-radius: 20px;
-  margin-top: 5px;
+  margin-top: 10px;
   padding: 5px;
 }
 
@@ -56,6 +57,10 @@ li::marker {
   border-width: 5px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.3);
+}
+
+.key-list-item {
+  height: 3.5em;
 }
 
 .project-list-link {
@@ -81,4 +86,5 @@ li::marker {
 
 .key-entry-uuid {
   float: right;
+  margin-right: 5px;
 }
