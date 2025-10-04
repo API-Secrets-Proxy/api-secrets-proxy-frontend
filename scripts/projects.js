@@ -39,7 +39,7 @@ function updateProjects () {
     let projectListItemEl = document.createElement("li");
     let projectEl = document.createElement("a");
     projectEl.classList.add("project-list-link");
-    projectEl.href = baseURL + "/project.html?uuid="+project.uuid;
+    projectEl.href = new URL(window.location.href.substring(0, location.href.lastIndexOf("/")) + "/project.html?uuid="+project.uuid);
     projectListItemEl.classList.add("project-list-item");
     let nameEl = document.createElement("h3");
     nameEl.innerText = project.name;
