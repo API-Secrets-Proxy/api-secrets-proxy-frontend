@@ -9,7 +9,13 @@ function createNewProject (e) {
   let {name, description, apikey} = Object.fromEntries(formData);
 
   //TODO: Make it work with API
-  fetch(`${baseURL}/users/${userData.id}/projects`, {"method": "POST"}).then(response => {
+  fetch(`${baseURL}/users/${userData.id}/projects`, {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": JSON.stringify({name, description, apikey})
+  }).then(response => {
     if (!response.ok) {
       console.log("bad request!", response);
       return;

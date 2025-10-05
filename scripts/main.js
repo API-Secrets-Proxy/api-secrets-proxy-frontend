@@ -2,7 +2,7 @@ var isLoggedIn = () => {
   return true; //TODO: change
 }
 
-var baseURL = "http://169.233.130.168:8080";
+var baseURL = "http://localhost:8080";
 
 var getUserData = () => {
   return {
