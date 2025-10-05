@@ -1,49 +1,76 @@
 
-var newKeyForm = document.getElementById("new-key-form")
-// newKeyForm.addEventListener("keydown", checkSubmit);
-function checkSubmit (e) {
-  if (e.key === "Enter") createNewKey();
-  
+var newKeyForm = document.getElementById("new-key-form");
+
+if (newKeyForm) {
+  newKeyForm.addEventListener("submit", createNewKey);
 }
-newKeyForm.addEventListener("submit", createNewKey);
-function createNewKey (e) {
+
+async function createNewKey(e) {
   e.preventDefault();
   let formData = new FormData(newKeyForm);
-  // console.log(Object.fromEntries(formData));
-  // console.log(formData);
   let {name, description, apikey} = Object.fromEntries(formData);
-  // REMOVE:
-  userData.projects[currentProject].keys.push(Object.fromEntries(formData));
-  updateKeyList()
 
-  //TODO: Make it work with API
-  fetch(`${baseURL}/users/${userData.id}/project/${currentProject}/keys`, {"method": "POST"}).then(response => {
-    if (!response.ok) {
-      console.log("bad request!", response);
-      return;
+  try {
+    const keyData = {
+      name: name,
+      description: description,
+      apiKey: apikey
+    };
+
+    const response = await createKey(userData.id, currentProject, keyData);
+    
+    if (response && response.id) {
+      // Save the key ID to localStorage so it can be loaded later
+      saveKnownKey(currentProject, response.id);
+      
+      // Add the new key to our local data
+      if (!userData.projects[currentProject].keys) {
+        userData.projects[currentProject].keys = [];
+      }
+      
+      userData.projects[currentProject].keys.push({
+        name: response.name,
+        description: response.description,
+        id: response.id
+      });
+      
+      // Update the UI
+      updateKeyList();
+      
+      // Clear the form
+      newKeyForm.reset();
+      
+      console.log('Key created successfully:', response);
     }
-    console.log(response);
-
-    userData.projects[currentProject].keys.push(Object.fromEntries(formData));
-    let data = response;
-    document.getElementById("partial-key-returned").value = data.partialKey;
-  })
-  
-
-  // console.log(e);
+  } catch (error) {
+    console.error('Error creating key:', error);
+    alert('Failed to create key. Please try again.');
+  }
 }
 
 function updateKeyList() {
   let keyListEl = document.getElementById("key-list");
+  if (!keyListEl) return;
+  
   keyListEl.innerHTML = "";
-  console.log(userData)
-  for (key of userData.projects[currentProject].keys) {
+  console.log(userData);
+  
+  const project = userData.projects[currentProject];
+  if (!project || !project.keys || project.keys.length === 0) {
+    let noKeysEl = document.createElement("p");
+    noKeysEl.innerText = "No keys yet. Create your first key above!";
+    noKeysEl.style.fontStyle = "italic";
+    noKeysEl.style.color = "#666";
+    keyListEl.appendChild(noKeysEl);
+    return;
+  }
+  
+  for (let key of project.keys) {
     let keyItemEl = document.createElement("li");
     keyItemEl.classList.add("project-list-item");
     keyItemEl.classList.add("key-list-item");
 
     let keyNameEl = document.createElement("h3");
-    // keyNameEl.classList.add("key-entry-item");
     keyNameEl.classList.add("key-entry-title");
     keyNameEl.innerText = key.name;
     keyItemEl.appendChild(keyNameEl);
@@ -67,7 +94,6 @@ function updateKeyList() {
       console.log(e.target);
     })
     
-
     keyListEl.appendChild(keyItemEl);
     console.log(key);
   }
