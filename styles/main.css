@@ -1,7 +1,7 @@
 :root {
-  --primary-background-color: #fbeaff;
-  --secondary-background-color: #b39cd0;
-  --primary-border-color: #845ec2;
+  --primary-background-color: #000000;
+  --secondary-background-color: #7736c6;
+  --primary-border-color: #ffffff;
 }
 
 header>* {
@@ -10,23 +10,26 @@ header>* {
 
 header {
   background-color: var(--secondary-background-color);
-
+  border-radius: 10px;
   height: 3em;
 }
 
 #home-logo {
-  margin-top: 0;
+  margin-top: 5px;
+  margin-left: 23.5em;
 }
 
 #project-name {
   margin-left: 4em;
   margin-top: 0;
   display: none;
-
+  
 }
 
 #right-header-items {
   float: right;
+  margin-top: 10;
+  margin-right: 6;
 }
 
 #left-header-items {
@@ -36,6 +39,7 @@ header {
 body {
   background-color: var(--primary-background-color);
   font-family: monospace;
+  margin: 10px;
 }
 
 
@@ -44,6 +48,7 @@ body {
   border-radius: 20px;
   margin-top: 10px;
   padding: 5px;
+  
 }
 
 li::marker {
@@ -53,38 +58,42 @@ li::marker {
 
 .project-list-item {
   border: 1px solid var(--primary-border-color);
-  border-radius: 20px;
-  border-width: 5px;
+  border-radius: 10px;
+  border-width: 2px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.3);
+  margin: 10px;
 }
 
 .key-list-item {
   height: 3.5em;
+  
 }
 
 .project-list-link {
   color: black;
   text-decoration: none;
+  
 }
 
 .project-list-name {
   margin: 0px;
   margin-left: 5px;
-
+  
 }
 
 .key-entry-title {
-  margin: 0px;
-
+  margin: 1px;
 }
 
 .key-entry-item {
   margin-left: 5px;
   margin-right: auto;
+  
 }
 
 .key-entry-uuid {
   float: right;
   margin-right: 5px;
+  
 }
