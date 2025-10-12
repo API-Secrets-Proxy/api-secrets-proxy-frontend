@@ -1,5 +1,5 @@
 :root {
-  --primary-background-color: #000000;
+  --primary-background-color: linear-gradient(to bottom, #000000, #2b0c52);
   --secondary-background-color: #7736c6;
   --primary-border-color: #ffffff;
 }
@@ -37,7 +37,7 @@ header {
 }
 
 body {
-  background-color: var(--primary-background-color);
+  background: var(--primary-background-color);
   font-family: monospace;
   margin: 10px;
 }
