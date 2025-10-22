@@ -25,13 +25,11 @@ export default function AuthRouter() {
     }
   };
 
-  // const { isLoaded, isSignedIn } = useUser();
-  // useEffect(() => {
-  //   if (!isLoaded) return;
-  //   if (isSignedIn) {
-  //     createUser();
-  //   }
-  // }, [isLoaded, isSignedIn]);
+  const { isLoaded, isSignedIn } = useUser();
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+      createUser();
+  }, [isLoaded, isSignedIn]);
 
   return (
     <div>
