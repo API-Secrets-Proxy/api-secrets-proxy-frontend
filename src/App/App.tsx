@@ -8,25 +8,6 @@ export default function App() {
   const { user } = useUser();
   const [apiResponse, setApiResponse] = useState("");
 
-  const createUser = async () => {
-    try {
-      const token = await getToken({ template: "default" });
-
-      const res = await fetch(`${API_URL}/me`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include" // optional if using cookies
-      });
-
-      const text = await res.text();
-      setApiResponse(text);
-    } catch (err) {
-      setApiResponse("Error: " + (err as Error).message);
-    }
-  };
-
   const getUser = async () => {
     try {
       const token = await getToken({ template: "default" });
@@ -54,7 +35,6 @@ export default function App() {
       <hr />
 
       {/* Call with signup template if this is the first session */}
-      <button onClick={() => createUser()}>Create User</button>
       <button onClick={() => getUser()}>Get User</button>
 
       <pre>{apiResponse}</pre>
