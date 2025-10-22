@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, SignInButton, SignOutButton, useAuth, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, RedirectToSignIn, SignOutButton, useAuth, useUser } from "@clerk/clerk-react";
 import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -51,8 +51,7 @@ export default function App() {
       <h1>Clerk + React + Vapor Demo</h1>
 
       <SignedOut>
-        <p>You’re signed out.</p>
-        <SignInButton />
+        <RedirectToSignIn />
       </SignedOut>
 
       <SignedIn>
