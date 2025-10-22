@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function App() {
+export default function AuthRouter() {
   const { getToken } = useAuth();
   const { user } = useUser();
   const [apiResponse, setApiResponse] = useState("");
