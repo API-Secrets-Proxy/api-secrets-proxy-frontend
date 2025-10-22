@@ -1,10 +1,11 @@
 import { SignOutButton, useAuth, useUser } from "@clerk/clerk-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function App() {
- const { getToken } = useAuth();
+export default function HomePage() {
+  const { getToken } = useAuth();
   const { user } = useUser();
   const [apiResponse, setApiResponse] = useState("");
 
@@ -26,19 +27,26 @@ export default function App() {
       setApiResponse("Error: " + (err as Error).message);
     }
   };
+
   return (
     <div style={{ padding: 32, fontFamily: "sans-serif" }}>
       <h1>Clerk + React + Vapor Demo</h1>
       <div>
-      <p>Welcome, {user?.fullName || user?.primaryEmailAddress?.emailAddress}!</p>
-      <SignOutButton />
-      <hr />
+        <p>Welcome, {user?.fullName || user?.primaryEmailAddress?.emailAddress}!</p>
+        <SignOutButton />
+        <hr />
 
-      {/* Call with signup template if this is the first session */}
-      <button onClick={() => getUser()}>Get User</button>
+        {/* Call with signup template if this is the first session */}
+        <button onClick={() => getUser()}>Get User</button>
 
-      <pre>{apiResponse}</pre>
-     </div>
+        <pre>{apiResponse}</pre>
+        
+        <hr />
+        <nav>
+          <Link to="/dashboard">Go to Dashboard</Link> | 
+          <Link to="/profile">Go to Profile</Link>
+        </nav>
+      </div>
     </div>
   );
 }

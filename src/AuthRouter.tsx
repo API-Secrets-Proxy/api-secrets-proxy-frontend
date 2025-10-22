@@ -1,6 +1,9 @@
 import { SignedIn, SignedOut, RedirectToSignIn, useAuth, useUser } from "@clerk/clerk-react";
-import App from "./App/App.tsx";
-import { use, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import HomePage from "./pages/HomePage";
+import DashboardPage from "./pages/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,15 +25,13 @@ export default function AuthRouter() {
     }
   };
 
-  const { isLoaded, isSignedIn } = useUser();
-  useEffect(() => {
-    if (!isLoaded) return;
-    useEffect(() => {
-      if (isSignedIn) {
-        createUser();
-      }
-    }, [isSignedIn]);
-  }, [isLoaded]);
+  // const { isLoaded, isSignedIn } = useUser();
+  // useEffect(() => {
+  //   if (!isLoaded) return;
+  //   if (isSignedIn) {
+  //     createUser();
+  //   }
+  // }, [isLoaded, isSignedIn]);
 
   return (
     <div>
@@ -39,7 +40,12 @@ export default function AuthRouter() {
       </SignedOut>
 
       <SignedIn>
-        <App/>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </SignedIn>
     </div>
   );
