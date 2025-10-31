@@ -18,35 +18,57 @@ export default function HomePage() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        credentials: "include" // optional if using cookies
+        credentials: "include", 
       });
 
       const text = await res.text();
-      setApiResponse(text);
+      setApiResponse(text || "(no response body)");
     } catch (err) {
       setApiResponse("Error: " + (err as Error).message);
     }
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: "sans-serif" }}>
-      <h1>Clerk + React + Vapor Demo</h1>
-      <div>
-        <p>Welcome, {user?.fullName || user?.primaryEmailAddress?.emailAddress}!</p>
-        <SignOutButton />
-        <hr />
+    <div className="layout-shell">
+      {/* Title */}
+      <h1 className="hero-title">ProxLock Dashboard</h1>
 
-        {/* Call with signup template if this is the first session */}
-        <button onClick={() => getUser()}>Get User</button>
+      {/* Subtext */}
+      <p className="hero-subtext">
+        Welcome
+        {user?.fullName
+          ? `, ${user.fullName}`
+          : user?.primaryEmailAddress?.emailAddress
+            ? `, ${user.primaryEmailAddress.emailAddress}`
+            : ""}
+        .
+        <br />
+        You’re signed in. You can test auth, inspect your session, and jump to secure areas of the app.
+      </p>
 
-        <pre>{apiResponse}</pre>
-        
-        <hr />
-        <nav>
-          <Link to="/dashboard">Go to Dashboard</Link> | 
-          <Link to="/profile">Go to Profile</Link>
-        </nav>
+      {/* Actions */}
+      <div className="actions-row">
+        {/* Sign out from Clerk */}
+        <SignOutButton>
+          <button className="btn-solid">Sign out</button>
+        </SignOutButton>
+
+        {/* Call backend */}
+        <button className="btn-solid" onClick={getUser}>
+          Get User
+        </button>
       </div>
+
+      {/* API response box */}
+      <div className="response-box">{apiResponse || "Click “Get User” to fetch /me from the backend."}</div>
+
+      {/* Nav links */}
+      <div className="link-row">
+        <Link to="/dashboard">Dashboard</Link>|<Link to="/profile">Profile</Link>
+      </div>
+
+      {/* Footer */}
+      <div className="page-footer">© {new Date().getFullYear()} ProxLock. All rights reserved.</div>
     </div>
   );
 }

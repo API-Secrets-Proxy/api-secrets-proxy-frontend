@@ -1,42 +1,151 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+/* Global background + typography */
+body {
+  margin: 0;
+  min-height: 100vh;
+  body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+  0deg,
+  rgb(0, 54, 47) 0%,
+  rgb(0, 32, 29) 35%,
+  #151615 100%
+);
+  background-attachment: fixed;
+  color: #dcdcdc;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", system-ui, sans-serif;
+}
+
+  background-color: #001410;
+  background-attachment: fixed;
+  color: #dcdcdc;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", system-ui, sans-serif;
+}
+
+/* Outer shell that centers the page content */
+.layout-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: 2rem;
+}
+
+/* Big purple headline, like "ProxLock" */
+.hero-title {
+  font-size: clamp(2.5rem, 2vw + 2rem, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #8b6bdb, #8b71c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin: 0 0 1rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Subtext under the title */
+.hero-subtext {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #d0d6d0;
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto 2rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Row of buttons like "Sign out", "Get User" */
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Shared button component */
+.btn-solid {
+  background-color: #2b2b31;
+  border: 1px solid #4a4a55;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
 }
 
-.card {
-  padding: 2em;
+.btn-solid:hover {
+  background-color: #3a3a42;
+  border-color: #6a6a80;
 }
 
-.read-the-docs {
+/* The Dashboard/Profile links at the bottom */
+.link-row {
+  font-size: 1rem;
+  color: #cfc9ff;
+}
+
+.link-row a {
+  color: #cfc9ff;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 0.5rem;
+}
+
+.link-row a:hover {
+  text-decoration: underline;
+  color: #a58bff;
+}
+
+/* Thin line separator */
+.divider {
+  width: 100%;
+  max-width: 480px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  margin: 2rem auto;
+}
+
+/* Footer at bottom of the shell */
+.page-footer {
+  margin-top: 3rem;
+  font-size: 0.8rem;
   color: #888;
+}
+
+/* Optional cards / panels if you want boxed sections on Dashboard */
+.card-surface {
+  background-color: rgba(20, 20, 24, 0.6);
+  border: 1px solid rgba(120, 120, 160, 0.25);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  min-width: 220px;
+  color: #eae9ff;
+  text-align: left;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #cfc9ff;
+  margin-bottom: 0.4rem;
+}
+
+.card-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Grid for cards on Dashboard */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  max-width: 800px;
+  width: 100%;
 }
