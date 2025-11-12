@@ -22,8 +22,7 @@ export default function ProfilePage() {
 
       <hr />
       <nav>
-        <Link to="/">Go to Home</Link> | 
-        <Link to="/dashboard">Go to Dashboard</Link>
+        <Link to="/">Go to Home</Link>
       </nav>
     </div>
   );
