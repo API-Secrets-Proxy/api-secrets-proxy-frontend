@@ -346,7 +346,7 @@ export default function DashboardPage() {
             <form onSubmit={handleCreateKey} className="modal-form">
               <div className="form-group">
                 <label htmlFor="key-name" className="form-label">
-                  Name (optional)
+                  Name
                 </label>
                 <input
                   type="text"
