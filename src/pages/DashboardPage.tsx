@@ -34,6 +34,9 @@ export default function DashboardPage() {
   const [partialKeyToShow, setPartialKeyToShow] = useState<string>("");
   const [showEditProjectModal, setShowEditProjectModal] = useState(false);
   const [isClosingEditModal, setIsClosingEditModal] = useState(false);
+  const [showEditKeyModal, setShowEditKeyModal] = useState(false);
+  const [isClosingEditKeyModal, setIsClosingEditKeyModal] = useState(false);
+  const [editingKeyId, setEditingKeyId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -43,8 +46,13 @@ export default function DashboardPage() {
     name: "",
     description: "",
   });
+  const [keyFormData, setKeyFormData] = useState({
+    name: "",
+    description: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [updatingProject, setUpdatingProject] = useState(false);
+  const [updatingKey, setUpdatingKey] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -277,6 +285,76 @@ export default function DashboardPage() {
     }
   };
 
+  const handleOpenEditKey = (key: APIKey) => {
+    if (key.id) {
+      setEditingKeyId(key.id);
+      setKeyFormData({
+        name: key.name || "",
+        description: key.description || "",
+      });
+      setShowEditKeyModal(true);
+    }
+  };
+
+  const handleCloseEditKey = () => {
+    setIsClosingEditKeyModal(true);
+    setTimeout(() => {
+      setShowEditKeyModal(false);
+      setIsClosingEditKeyModal(false);
+      setEditingKeyId(null);
+      setKeyFormData({ name: "", description: "" });
+    }, 300);
+  };
+
+  const handleUpdateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !editingKeyId) return;
+
+    try {
+      setUpdatingKey(true);
+      const token = await getToken({ template: "default" });
+      
+      const res = await fetch(`${API_URL}/me/projects/${projectId}/keys/${editingKeyId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: keyFormData.name || undefined,
+          description: keyFormData.description,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update key: ${res.statusText}`);
+      }
+
+      // Refresh keys list
+      const keysRes = await fetch(`${API_URL}/me/projects/${projectId}/keys`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
+
+      if (keysRes.ok) {
+        const keysData = await keysRes.json();
+        setKeys(Array.isArray(keysData) ? keysData : []);
+      }
+
+      handleCloseEditKey();
+    } catch (err) {
+      console.error("Error updating key:", err);
+      alert("Failed to update key. Please try again.");
+    } finally {
+      setUpdatingKey(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -363,18 +441,29 @@ export default function DashboardPage() {
                 <div key={key.id} className="key-card">
                   <div className="key-card-header">
                     <h3 className="key-name">{key.name || "Unnamed Key"}</h3>
-                    <button
-                      className="key-delete-btn"
-                      onClick={() => key.id && handleDeleteKey(key.id)}
-                      title="Delete key"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5.5 5.5C5.77614 5.5 6 5.72386 6 6V12C6 12.2761 5.77614 12.5 5.5 12.5C5.22386 12.5 5 12.2761 5 12V6C5 5.72386 5.22386 5.5 5.5 5.5Z" fill="currentColor"/>
-                        <path d="M8 5.5C8.27614 5.5 8.5 5.72386 8.5 6V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V6C7.5 5.72386 7.72386 5.5 8 5.5Z" fill="currentColor"/>
-                        <path d="M11 6C11 5.72386 10.7761 5.5 10.5 5.5C10.2239 5.5 10 5.72386 10 6V12C10 12.2761 10.2239 12.5 10.5 12.5C10.7761 12.5 11 12.2761 11 12V6Z" fill="currentColor"/>
-                        <path fillRule="evenodd" clipRule="evenodd" d="M10.5 2C10.7761 2 11 2.22386 11 2.5V3H13.5C13.7761 3 14 3.22386 14 3.5C14 3.77614 13.7761 4 13.5 4H12.5V13C12.5 13.8284 11.8284 14.5 11 14.5H5C4.17157 14.5 3.5 13.8284 3.5 13V4H2.5C2.22386 4 2 3.77614 2 3.5C2 3.22386 2.22386 3 2.5 3H5V2.5C5 2.22386 5.22386 2 5.5 2H10.5ZM4.5 4V13C4.5 13.2761 4.72386 13.5 5 13.5H11C11.2761 13.5 11.5 13.2761 11.5 13V4H4.5Z" fill="currentColor"/>
-                      </svg>
-                    </button>
+                    <div className="key-card-actions">
+                      <button
+                        className="key-edit-btn"
+                        onClick={() => handleOpenEditKey(key)}
+                        title="Edit key"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11.5 1.5L14.5 4.5L4.5 14.5H1.5V11.5L11.5 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      <button
+                        className="key-delete-btn"
+                        onClick={() => key.id && handleDeleteKey(key.id)}
+                        title="Delete key"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5.5 5.5C5.77614 5.5 6 5.72386 6 6V12C6 12.2761 5.77614 12.5 5.5 12.5C5.22386 12.5 5 12.2761 5 12V6C5 5.72386 5.22386 5.5 5.5 5.5Z" fill="currentColor"/>
+                          <path d="M8 5.5C8.27614 5.5 8.5 5.72386 8.5 6V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V6C7.5 5.72386 7.72386 5.5 8 5.5Z" fill="currentColor"/>
+                          <path d="M11 6C11 5.72386 10.7761 5.5 10.5 5.5C10.2239 5.5 10 5.72386 10 6V12C10 12.2761 10.2239 12.5 10.5 12.5C10.7761 12.5 11 12.2761 11 12V6Z" fill="currentColor"/>
+                          <path fillRule="evenodd" clipRule="evenodd" d="M10.5 2C10.7761 2 11 2.22386 11 2.5V3H13.5C13.7761 3 14 3.22386 14 3.5C14 3.77614 13.7761 4 13.5 4H12.5V13C12.5 13.8284 11.8284 14.5 11 14.5H5C4.17157 14.5 3.5 13.8284 3.5 13V4H2.5C2.22386 4 2 3.77614 2 3.5C2 3.22386 2.22386 3 2.5 3H5V2.5C5 2.22386 5.22386 2 5.5 2H10.5ZM4.5 4V13C4.5 13.2761 4.72386 13.5 5 13.5H11C11.2761 13.5 11.5 13.2761 11.5 13V4H4.5Z" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   {key.description && (
                     <p className="key-description">{key.description}</p>
@@ -531,6 +620,63 @@ export default function DashboardPage() {
                 </button>
                 <button type="submit" className="btn-primary" disabled={updatingProject}>
                   {updatingProject ? "Updating..." : "Update Project"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Key Modal */}
+      {showEditKeyModal && (
+        <div className={`modal-overlay ${isClosingEditKeyModal ? 'closing' : ''}`} onClick={handleCloseEditKey}>
+          <div className={`modal-content ${isClosingEditKeyModal ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit API Key</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleCloseEditKey}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUpdateKey} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="key-edit-name" className="form-label">
+                  Key Name
+                </label>
+                <input
+                  type="text"
+                  id="key-edit-name"
+                  className="form-input"
+                  value={keyFormData.name}
+                  onChange={(e) => setKeyFormData({ ...keyFormData, name: e.target.value })}
+                  placeholder="Enter key name"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="key-edit-description" className="form-label">
+                  Description
+                </label>
+                <textarea
+                  id="key-edit-description"
+                  className="form-textarea"
+                  value={keyFormData.description}
+                  onChange={(e) => setKeyFormData({ ...keyFormData, description: e.target.value })}
+                  placeholder="Enter key description"
+                  rows={4}
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleCloseEditKey}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={updatingKey}>
+                  {updatingKey ? "Updating..." : "Update Key"}
                 </button>
               </div>
             </form>
