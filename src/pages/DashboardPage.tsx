@@ -296,7 +296,12 @@ export default function DashboardPage() {
                       onClick={() => key.id && handleDeleteKey(key.id)}
                       title="Delete key"
                     >
-                      ×
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.5 5.5C5.77614 5.5 6 5.72386 6 6V12C6 12.2761 5.77614 12.5 5.5 12.5C5.22386 12.5 5 12.2761 5 12V6C5 5.72386 5.22386 5.5 5.5 5.5Z" fill="currentColor"/>
+                        <path d="M8 5.5C8.27614 5.5 8.5 5.72386 8.5 6V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V6C7.5 5.72386 7.72386 5.5 8 5.5Z" fill="currentColor"/>
+                        <path d="M11 6C11 5.72386 10.7761 5.5 10.5 5.5C10.2239 5.5 10 5.72386 10 6V12C10 12.2761 10.2239 12.5 10.5 12.5C10.7761 12.5 11 12.2761 11 12V6Z" fill="currentColor"/>
+                        <path fillRule="evenodd" clipRule="evenodd" d="M10.5 2C10.7761 2 11 2.22386 11 2.5V3H13.5C13.7761 3 14 3.22386 14 3.5C14 3.77614 13.7761 4 13.5 4H12.5V13C12.5 13.8284 11.8284 14.5 11 14.5H5C4.17157 14.5 3.5 13.8284 3.5 13V4H2.5C2.22386 4 2 3.77614 2 3.5C2 3.22386 2.22386 3 2.5 3H5V2.5C5 2.22386 5.22386 2 5.5 2H10.5ZM4.5 4V13C4.5 13.2761 4.72386 13.5 5 13.5H11C11.2761 13.5 11.5 13.2761 11.5 13V4H4.5Z" fill="currentColor"/>
+                      </svg>
                     </button>
                   </div>
                   {key.description && (

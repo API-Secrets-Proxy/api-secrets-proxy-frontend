@@ -659,8 +659,6 @@ body {
   background: transparent;
   border: none;
   color: #ff6b6b;
-  font-size: 1.5rem;
-  font-weight: 300;
   width: 32px;
   height: 32px;
   display: flex;
@@ -670,13 +668,21 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  line-height: 1;
   padding: 0;
+}
+
+.key-delete-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
 }
 
 .key-delete-btn:hover {
   background: rgba(255, 107, 107, 0.1);
   color: #ff5252;
+}
+
+.key-delete-btn:hover svg {
   transform: scale(1.1);
 }
 
