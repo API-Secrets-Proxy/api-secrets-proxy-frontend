@@ -466,6 +466,13 @@ body {
   margin-bottom: 2rem;
 }
 
+.dashboard-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
 .dashboard-title {
   font-size: clamp(2rem, 2vw + 1.5rem, 2.75rem);
   font-weight: 700;
@@ -473,7 +480,36 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0 0 0.75rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.edit-project-btn {
+  background: rgba(139, 107, 219, 0.1);
+  border: 1px solid rgba(139, 107, 219, 0.3);
+  color: #8b6bdb;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.edit-project-btn:hover {
+  background: rgba(139, 107, 219, 0.2);
+  border-color: rgba(139, 107, 219, 0.5);
+  color: #a58bff;
+  transform: translateY(-1px);
+}
+
+.edit-project-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .dashboard-description {

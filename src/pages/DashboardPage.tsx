@@ -32,12 +32,19 @@ export default function DashboardPage() {
   const [showPartialKey, setShowPartialKey] = useState(false);
   const [isClosingPartialKey, setIsClosingPartialKey] = useState(false);
   const [partialKeyToShow, setPartialKeyToShow] = useState<string>("");
+  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+  const [isClosingEditModal, setIsClosingEditModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     apiKey: "",
   });
+  const [projectFormData, setProjectFormData] = useState({
+    name: "",
+    description: "",
+  });
   const [submitting, setSubmitting] = useState(false);
+  const [updatingProject, setUpdatingProject] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -216,6 +223,60 @@ export default function DashboardPage() {
     }, 300);
   };
 
+  const handleOpenEditProject = () => {
+    if (project) {
+      setProjectFormData({
+        name: project.name || "",
+        description: project.description || "",
+      });
+      setShowEditProjectModal(true);
+    }
+  };
+
+  const handleCloseEditProject = () => {
+    setIsClosingEditModal(true);
+    setTimeout(() => {
+      setShowEditProjectModal(false);
+      setIsClosingEditModal(false);
+    }, 300);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !project) return;
+
+    try {
+      setUpdatingProject(true);
+      const token = await getToken({ template: "default" });
+      
+      const res = await fetch(`${API_URL}/me/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: projectFormData.name || undefined,
+          description: projectFormData.description,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update project: ${res.statusText}`);
+      }
+
+      const updatedProject = await res.json();
+      setProject(updatedProject);
+      handleCloseEditProject();
+    } catch (err) {
+      console.error("Error updating project:", err);
+      alert("Failed to update project. Please try again.");
+    } finally {
+      setUpdatingProject(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -250,7 +311,18 @@ export default function DashboardPage() {
           </button>
         </div>
         <div className="dashboard-title-section">
-          <h1 className="dashboard-title">{project.name || "Unnamed Project"}</h1>
+          <div className="dashboard-title-row">
+            <h1 className="dashboard-title">{project.name || "Unnamed Project"}</h1>
+            <button
+              className="edit-project-btn"
+              onClick={handleOpenEditProject}
+              title="Edit project"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13.5 1.5L16.5 4.5L5.25 15.75H1.5V12L13.5 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
           <p className="dashboard-description">{project.description || "No description provided"}</p>
         </div>
       </header>
@@ -402,6 +474,63 @@ export default function DashboardPage() {
                 </button>
                 <button type="submit" className="btn-primary" disabled={submitting || !formData.apiKey}>
                   {submitting ? "Creating..." : "Create Key"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {showEditProjectModal && (
+        <div className={`modal-overlay ${isClosingEditModal ? 'closing' : ''}`} onClick={handleCloseEditProject}>
+          <div className={`modal-content ${isClosingEditModal ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit Project</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleCloseEditProject}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUpdateProject} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="project-name" className="form-label">
+                  Project Name
+                </label>
+                <input
+                  type="text"
+                  id="project-name"
+                  className="form-input"
+                  value={projectFormData.name}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
+                  placeholder="Enter project name"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="project-description" className="form-label">
+                  Description
+                </label>
+                <textarea
+                  id="project-description"
+                  className="form-textarea"
+                  value={projectFormData.description}
+                  onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
+                  placeholder="Enter project description"
+                  rows={4}
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleCloseEditProject}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={updatingProject}>
+                  {updatingProject ? "Updating..." : "Update Project"}
                 </button>
               </div>
             </form>
