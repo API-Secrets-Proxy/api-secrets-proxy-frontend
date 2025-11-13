@@ -673,17 +673,6 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="dashboard-main">
-        <div className="dashboard-stats">
-          <div className="stat-card">
-            <div className="stat-label">Total Keys</div>
-            <div className="stat-value">{keys.length}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">Project ID</div>
-            <div className="stat-value-small">{project.id || "N/A"}</div>
-          </div>
-        </div>
-
         <div className="keys-section">
           <div className="keys-header">
             <h2 className="section-title">API Keys</h2>

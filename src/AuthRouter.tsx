@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, RedirectToSignIn, useAuth, useUser, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, RedirectToSignIn, useAuth, useUser } from "@clerk/clerk-react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import HomePage from "./pages/HomePage";
@@ -22,17 +22,6 @@ function AppWithSidebar() {
       <div className="app-layout">
         <Sidebar ref={sidebarRef} />
         <div className="main-content">
-          {/* Top Right User Button */}
-          <div className="top-right-user-button">
-            <UserButton 
-              appearance={{
-                elements: {
-                  userButtonPopoverCard: "clerk-user-button-card",
-                  userButtonPopoverActions: "clerk-user-button-actions",
-                },
-              }}
-            />
-          </div>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/projects/:projectId" element={<DashboardPage />} />

@@ -1,4 +1,5 @@
 import { useAuth } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 
@@ -15,7 +16,7 @@ export interface SidebarRef {
   refreshProjects: () => void;
 }
 
-const Sidebar = forwardRef<SidebarRef>((props, ref) => {
+const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   const { getToken } = useAuth();
   const location = useLocation();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -151,6 +152,10 @@ const Sidebar = forwardRef<SidebarRef>((props, ref) => {
             )}
           </div>
         </nav>
+
+        <div className="sidebar-user-button">
+          <UserButton showName={false}/>
+        </div>
 
         <div className="sidebar-footer">
           <p className="sidebar-footer-text">© {new Date().getFullYear()} ProxLock</p>
