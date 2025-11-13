@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useProjectsContext } from "../contexts/ProjectsContext";
 import ErrorToast from "../components/ErrorToast";
+import NotFoundPage from "./NotFoundPage";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -105,6 +106,7 @@ export default function DashboardPage() {
   const [deviceCheckKey, setDeviceCheckKey] = useState<DeviceCheckKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [showAddKeyModal, setShowAddKeyModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [showPartialKey, setShowPartialKey] = useState(false);
@@ -256,6 +258,7 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         setError(null);
+        setIsNotFound(false);
         const token = await getToken({ template: "default" });
 
         // Fetch project details
@@ -269,10 +272,24 @@ export default function DashboardPage() {
         });
 
         if (!projectRes.ok) {
+          // Show 404 page for 404, 403 (forbidden), or any error fetching the project
+          if (projectRes.status === 404 || projectRes.status === 403) {
+            setIsNotFound(true);
+            setLoading(false);
+            return;
+          }
           throw new Error(`Failed to fetch project: ${projectRes.statusText}`);
         }
 
-        const projectData = await projectRes.json();
+        let projectData;
+        try {
+          projectData = await projectRes.json();
+        } catch (parseError) {
+          // If we can't parse the response, treat it as not found
+          setIsNotFound(true);
+          setLoading(false);
+          return;
+        }
         setProject(projectData);
 
         // Fetch keys
@@ -778,6 +795,10 @@ export default function DashboardPage() {
       setLinkingKey(false);
     }
   };
+
+  if (isNotFound) {
+    return <NotFoundPage />;
+  }
 
   if (loading) {
     return (

@@ -1,8 +1,9 @@
 import { SignedIn, SignedOut, RedirectToSignIn, useAuth, useUser } from "@clerk/clerk-react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import Sidebar, { type SidebarRef } from "./components/Sidebar";
 import { ProjectsProvider } from "./contexts/ProjectsContext";
 
@@ -25,7 +26,7 @@ function AppWithSidebar() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/projects/:projectId" element={<DashboardPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </div>

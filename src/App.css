@@ -2898,6 +2898,60 @@ body {
   transition: all 0.2s ease;
 }
 
+/* 404 Not Found Page */
+.not-found-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+  padding: 2rem;
+}
+
+.not-found-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 600px;
+  gap: 1.5rem;
+}
+
+.not-found-icon {
+  font-size: 8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b6bdb, #8b71c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.not-found-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #eae9ff;
+  margin: 0;
+}
+
+.not-found-message {
+  font-size: 1.125rem;
+  color: #a0a0b0;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.not-found-actions {
+  margin-top: 0.5rem;
+}
+
+.not-found-actions .btn-primary {
+  text-decoration: none;
+  display: inline-block;
+}
+
 .whitelisted-url-item:hover {
   background: rgba(0, 0, 0, 0.4);
   border-color: rgba(139, 107, 219, 0.3);
