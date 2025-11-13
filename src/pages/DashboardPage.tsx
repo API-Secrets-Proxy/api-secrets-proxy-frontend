@@ -6,6 +6,73 @@ import ErrorToast from "../components/ErrorToast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Directory of popular APIs and their whitelisted URLs
+const API_DIRECTORY: Record<string, string[]> = {
+  openai: ["api.openai.com"],
+  "open ai": ["api.openai.com"],
+  "open-ai": ["api.openai.com"],
+  claude: ["api.anthropic.com"],
+  anthropic: ["api.anthropic.com"],
+  openrouter: ["openrouter.ai"],
+  "open router": ["openrouter.ai"],
+  "open-router": ["openrouter.ai"],
+  groq: ["api.groq.com"],
+  mistral: ["api.mistral.ai"],
+  cohere: ["api.cohere.com"],
+  together: ["api.together.xyz"],
+  perplexity: ["api.perplexity.ai"],
+  gemini: ["generativelanguage.googleapis.com"],
+  google: ["generativelanguage.googleapis.com"],
+  "google ai": ["generativelanguage.googleapis.com"],
+  xai: ["api.x.ai"],
+  "x ai": ["api.x.ai"],
+  replicate: ["api.replicate.com"],
+  stability: ["api.stability.ai"],
+  "stability ai": ["api.stability.ai"],
+  huggingface: ["api-inference.huggingface.co"],
+  "hugging face": ["api-inference.huggingface.co"],
+  "hugging-face": ["api-inference.huggingface.co"],
+  aleph: ["api.aleph-alpha.com"],
+  "aleph alpha": ["api.aleph-alpha.com"],
+  "aleph-alpha": ["api.aleph-alpha.com"],
+  ai21: ["api.ai21.com"],
+  "ai21 labs": ["api.ai21.com"],
+  "ai21-labs": ["api.ai21.com"],
+  nvidia: ["integrate.api.nvidia.com"],
+  "nvidia nims": ["integrate.api.nvidia.com"],
+  "nvidia-nims": ["integrate.api.nvidia.com"],
+};
+
+const getWhitelistedUrlsFromName = (name: string): string[] => {
+  if (!name) return [];
+  
+  const normalizedName = name.toLowerCase().trim();
+  
+  // Direct match
+  if (API_DIRECTORY[normalizedName]) {
+    return API_DIRECTORY[normalizedName];
+  }
+  
+  // Partial match - only if input is at least 3 characters
+  // Match if the normalized name starts with a key, or if a key is contained in the name
+  if (normalizedName.length >= 3) {
+    for (const [key, urls] of Object.entries(API_DIRECTORY)) {
+      // Check if name starts with the key (e.g., "openai" matches "openai key")
+      if (normalizedName.startsWith(key)) {
+        return urls;
+      }
+      // Check if name contains the key as a whole word (e.g., "my openai key" matches "openai")
+      // Split by spaces/hyphens and check if any part matches the key
+      const nameParts = normalizedName.split(/[\s\-_]+/);
+      if (nameParts.includes(key)) {
+        return urls;
+      }
+    }
+  }
+  
+  return [];
+};
+
 interface Project {
   id?: string;
   name?: string;
@@ -123,6 +190,32 @@ export default function DashboardPage() {
       setFormData({
         ...formData,
         whitelistedUrls: formData.whitelistedUrls.filter((u) => u !== url),
+      });
+    }
+  };
+
+  const handleNameChange = (name: string, isEdit: boolean = false) => {
+    const autoUrls = getWhitelistedUrlsFromName(name);
+    
+    if (isEdit) {
+      // If name is empty, clear whitelistedUrls
+      // If name matches an API, always update whitelistedUrls
+      const newWhitelistedUrls = !name.trim() ? [] : (autoUrls.length > 0 ? autoUrls : keyFormData.whitelistedUrls);
+      
+      setKeyFormData({
+        ...keyFormData,
+        name,
+        whitelistedUrls: newWhitelistedUrls,
+      });
+    } else {
+      // If name is empty, clear whitelistedUrls
+      // If name matches an API, always update whitelistedUrls
+      const newWhitelistedUrls = !name.trim() ? [] : (autoUrls.length > 0 ? autoUrls : formData.whitelistedUrls);
+      
+      setFormData({
+        ...formData,
+        name,
+        whitelistedUrls: newWhitelistedUrls,
       });
     }
   };
@@ -959,7 +1052,7 @@ export default function DashboardPage() {
                   id="key-name"
                   className="form-input"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => handleNameChange(e.target.value, false)}
                   placeholder="e.g., OpenAI, Stripe"
                 />
               </div>
@@ -1146,7 +1239,7 @@ export default function DashboardPage() {
                   id="key-edit-name"
                   className="form-input"
                   value={keyFormData.name}
-                  onChange={(e) => setKeyFormData({ ...keyFormData, name: e.target.value })}
+                  onChange={(e) => handleNameChange(e.target.value, true)}
                   placeholder="Enter key name"
                 />
               </div>
