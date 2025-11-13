@@ -1098,7 +1098,13 @@ export default function DashboardPage() {
                     onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, teamID: e.target.value })}
                     placeholder="e.g., XYZ789GHI0"
                     required
+                    minLength={10}
+                    maxLength={10}
+                    pattern=".{10}"
                   />
+                  <p className="form-hint">
+                    Team ID must be exactly 10 characters.
+                  </p>
                 </div>
                 <div className="form-group">
                   <label htmlFor="devicecheck-keyid" className="form-label">
@@ -1171,7 +1177,7 @@ export default function DashboardPage() {
                     required
                   />
                   <p className="form-hint">
-                    Paste your ES256 private key in PEM format here, or upload a .pem, .key, .txt, or .p8 file.
+                    Paste your ES256 private key in PEM format here, or upload a .p8 file.
                   </p>
                 </div>
                 <div className="modal-actions">
@@ -1182,7 +1188,7 @@ export default function DashboardPage() {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary" disabled={uploadingDeviceCheck || !deviceCheckFormData.teamID.trim() || !deviceCheckFormData.keyID.trim() || !deviceCheckFormData.privateKey.trim()}>
+                  <button type="submit" className="btn-primary" disabled={uploadingDeviceCheck || !deviceCheckFormData.teamID.trim() || deviceCheckFormData.teamID.trim().length !== 10 || !deviceCheckFormData.keyID.trim() || !deviceCheckFormData.privateKey.trim()}>
                     {uploadingDeviceCheck ? "Uploading..." : "Upload Key"}
                   </button>
                 </div>

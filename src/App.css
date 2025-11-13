@@ -3,11 +3,11 @@ body {
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(
-    0deg,
-    rgb(0, 54, 47) 0%,
-    rgb(0, 32, 29) 35%,
-    #151615 100%
-  );
+  0deg,
+  rgb(0, 54, 47) 0%,
+  rgb(0, 32, 29) 35%,
+  #151615 100%
+);
   background-attachment: fixed;
   color: #dcdcdc;
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", system-ui, sans-serif;
