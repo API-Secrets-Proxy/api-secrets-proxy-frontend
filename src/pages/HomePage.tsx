@@ -1,4 +1,4 @@
-import { SignOutButton, useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -55,17 +55,24 @@ export default function HomePage() {
 
   return (
     <div className="homepage-container">
+      {/* Top Right User Button */}
+      <div className="top-right-user-button">
+        <UserButton 
+          appearance={{
+            elements: {
+              userButtonPopoverCard: "clerk-user-button-card",
+              userButtonPopoverActions: "clerk-user-button-actions",
+            },
+          }}
+        />
+      </div>
+
       {/* Header Section */}
       <header className="homepage-header">
         <h1 className="hero-title">Welcome back, {userName}!</h1>
         <p className="hero-subtext">
           Manage your API proxy projects and keys from one central dashboard.
         </p>
-        <div className="header-actions">
-          <SignOutButton>
-            <button className="btn-solid">Sign out</button>
-          </SignOutButton>
-        </div>
       </header>
 
       {/* Main Content */}
@@ -136,11 +143,6 @@ export default function HomePage() {
           </>
         )}
       </main>
-
-      {/* Navigation */}
-      <nav className="homepage-nav">
-        <Link to="/profile">Profile</Link>
-      </nav>
 
       {/* Footer */}
       <footer className="page-footer">

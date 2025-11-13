@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, UserButton } from "@clerk/clerk-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -381,6 +381,18 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-container">
+      {/* Top Right User Button */}
+      <div className="top-right-user-button">
+        <UserButton 
+          appearance={{
+            elements: {
+              userButtonPopoverCard: "clerk-user-button-card",
+              userButtonPopoverActions: "clerk-user-button-actions",
+            },
+          }}
+        />
+      </div>
+
       {/* Header */}
       <header className="dashboard-header">
         <div className="dashboard-header-top">
@@ -492,8 +504,6 @@ export default function DashboardPage() {
       {/* Navigation */}
       <nav className="dashboard-nav">
         <Link to="/">Home</Link>
-        <span className="nav-separator">•</span>
-        <Link to="/profile">Profile</Link>
       </nav>
 
       {/* Add Key Modal */}
