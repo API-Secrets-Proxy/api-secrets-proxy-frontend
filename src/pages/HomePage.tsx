@@ -57,14 +57,7 @@ export default function HomePage() {
     <div className="homepage-container">
       {/* Top Right User Button */}
       <div className="top-right-user-button">
-        <UserButton 
-          appearance={{
-            elements: {
-              userButtonPopoverCard: "clerk-user-button-card",
-              userButtonPopoverActions: "clerk-user-button-actions",
-            },
-          }}
-        />
+        <UserButton/>
       </div>
 
       {/* Header Section */}

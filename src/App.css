@@ -1027,6 +1027,10 @@ body {
 .required {
   color: #ff6b6b;
 }
+.cl-avatarBox {
+  width: 3rem;
+  height: 3rem;
+}
 
 .form-input,
 .form-textarea {
