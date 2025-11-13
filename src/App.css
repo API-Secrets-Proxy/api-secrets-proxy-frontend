@@ -2877,3 +2877,78 @@ body {
   line-height: 1.5;
   font-style: italic;
 }
+
+/* Whitelisted URLs */
+.whitelisted-urls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.whitelisted-url-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 107, 219, 0.2);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.whitelisted-url-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(139, 107, 219, 0.3);
+}
+
+.whitelisted-url-value {
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #8b6bdb;
+  flex: 1;
+  word-break: break-all;
+}
+
+.whitelisted-url-remove {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.whitelisted-url-remove:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff5252;
+  transform: scale(1.1);
+}
+
+.whitelisted-url-remove:active {
+  transform: scale(0.95);
+}
+
+.whitelisted-urls-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.whitelisted-urls-input-group .form-input {
+  flex: 1;
+}
+
+.whitelisted-urls-input-group .btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}

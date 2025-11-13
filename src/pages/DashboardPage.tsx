@@ -19,6 +19,7 @@ interface APIKey {
   description?: string;
   partialKey?: string;
   associationId?: string;
+  whitelistedUrls?: string[];
 }
 
 interface DeviceCheckKey {
@@ -51,6 +52,7 @@ export default function DashboardPage() {
     name: "",
     description: "",
     apiKey: "",
+    whitelistedUrls: [] as string[],
   });
   const [projectFormData, setProjectFormData] = useState({
     name: "",
@@ -59,6 +61,7 @@ export default function DashboardPage() {
   const [keyFormData, setKeyFormData] = useState({
     name: "",
     description: "",
+    whitelistedUrls: [] as string[],
   });
   const [submitting, setSubmitting] = useState(false);
   const [updatingProject, setUpdatingProject] = useState(false);
@@ -79,6 +82,50 @@ export default function DashboardPage() {
   const [selectedKeyToLink, setSelectedKeyToLink] = useState<string>("");
   const [linkingKey, setLinkingKey] = useState(false);
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [newWhitelistedUrl, setNewWhitelistedUrl] = useState("");
+  const [newWhitelistedUrlEdit, setNewWhitelistedUrlEdit] = useState("");
+
+  const handleAddWhitelistedUrl = (isEdit: boolean = false) => {
+    const url = isEdit ? newWhitelistedUrlEdit : newWhitelistedUrl;
+    if (!url.trim()) return;
+
+    // Remove protocol if present
+    let cleanUrl = url.trim();
+    cleanUrl = cleanUrl.replace(/^https?:\/\//i, "");
+    cleanUrl = cleanUrl.replace(/^\/+/, ""); // Remove leading slashes
+
+    if (isEdit) {
+      if (!keyFormData.whitelistedUrls.includes(cleanUrl)) {
+        setKeyFormData({
+          ...keyFormData,
+          whitelistedUrls: [...keyFormData.whitelistedUrls, cleanUrl],
+        });
+      }
+      setNewWhitelistedUrlEdit("");
+    } else {
+      if (!formData.whitelistedUrls.includes(cleanUrl)) {
+        setFormData({
+          ...formData,
+          whitelistedUrls: [...formData.whitelistedUrls, cleanUrl],
+        });
+      }
+      setNewWhitelistedUrl("");
+    }
+  };
+
+  const handleRemoveWhitelistedUrl = (url: string, isEdit: boolean = false) => {
+    if (isEdit) {
+      setKeyFormData({
+        ...keyFormData,
+        whitelistedUrls: keyFormData.whitelistedUrls.filter((u) => u !== url),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        whitelistedUrls: formData.whitelistedUrls.filter((u) => u !== url),
+      });
+    }
+  };
 
   const handleFileRead = (file: File) => {
     if (file && (file.name.endsWith('.pem') || file.name.endsWith('.key') || file.name.endsWith('.txt') || file.name.endsWith('.p8'))) {
@@ -230,6 +277,7 @@ export default function DashboardPage() {
           name: formData.name || undefined,
           description: formData.description || undefined,
           apiKey: formData.apiKey || undefined,
+          whitelistedUrls: formData.whitelistedUrls,
         }),
       });
 
@@ -246,11 +294,11 @@ export default function DashboardPage() {
         setShowPartialKey(true);
         setShowAddKeyModal(false);
         // Reset form
-        setFormData({ name: "", description: "", apiKey: "" });
+        setFormData({ name: "", description: "", apiKey: "", whitelistedUrls: [] });
       } else {
         // If no partial key returned, just close modal and refresh
         setShowAddKeyModal(false);
-        setFormData({ name: "", description: "", apiKey: "" });
+        setFormData({ name: "", description: "", apiKey: "", whitelistedUrls: [] });
       }
 
       // Refresh keys list
@@ -291,7 +339,8 @@ export default function DashboardPage() {
     setTimeout(() => {
       setShowAddKeyModal(false);
       setIsClosingModal(false);
-      setFormData({ name: "", description: "", apiKey: "" });
+      setFormData({ name: "", description: "", apiKey: "", whitelistedUrls: [] });
+      setNewWhitelistedUrl("");
     }, 300);
   };
 
@@ -367,6 +416,7 @@ export default function DashboardPage() {
       setKeyFormData({
         name: key.name || "",
         description: key.description || "",
+        whitelistedUrls: key.whitelistedUrls || [],
       });
       setShowEditKeyModal(true);
     }
@@ -378,7 +428,8 @@ export default function DashboardPage() {
       setShowEditKeyModal(false);
       setIsClosingEditKeyModal(false);
       setEditingKeyId(null);
-      setKeyFormData({ name: "", description: "" });
+      setKeyFormData({ name: "", description: "", whitelistedUrls: [] });
+      setNewWhitelistedUrlEdit("");
     }, 300);
   };
 
@@ -400,6 +451,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           name: keyFormData.name || undefined,
           description: keyFormData.description,
+          whitelistedUrls: keyFormData.whitelistedUrls,
         }),
       });
 
@@ -790,6 +842,18 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     )}
+                    {key.whitelistedUrls && key.whitelistedUrls.length > 0 && (
+                      <div className="key-detail-row">
+                        <span className="key-detail-label">Whitelisted URLs:</span>
+                        <div className="whitelisted-urls-list">
+                          {key.whitelistedUrls.map((url, index) => (
+                            <div key={index} className="whitelisted-url-item">
+                              <code className="whitelisted-url-value">{url}/*</code>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -929,6 +993,62 @@ export default function DashboardPage() {
                   ⚠️ This key will be split and stored securely. You'll receive a partial key once to copy.
                 </p>
               </div>
+              <div className="form-group">
+                <label htmlFor="key-whitelisted-urls" className="form-label">
+                  Whitelisted URLs <span className="required">*</span>
+                </label>
+                <div className="whitelisted-urls-input-group">
+                  <input
+                    type="text"
+                    id="key-whitelisted-urls"
+                    className="form-input"
+                    value={newWhitelistedUrl}
+                    onChange={(e) => setNewWhitelistedUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddWhitelistedUrl(false);
+                      }
+                    }}
+                    placeholder="e.g., api.example.com or api.example.com/path"
+                  />
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddWhitelistedUrl(false);
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="form-hint">
+                  At least one URL is required. URLs are treated as wildcards (e.g., "api.example.com" matches "api.example.com/*"). Protocol is not required.
+                </p>
+                {formData.whitelistedUrls.length > 0 && (
+                  <div className="whitelisted-urls-list">
+                    {formData.whitelistedUrls.map((url, index) => (
+                      <div key={index} className="whitelisted-url-item">
+                        <code className="whitelisted-url-value">{url}/*</code>
+                        <button
+                          type="button"
+                          className="whitelisted-url-remove"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveWhitelistedUrl(url, false);
+                          }}
+                          title="Remove URL"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="modal-actions">
                 <button
                   type="button"
@@ -937,7 +1057,7 @@ export default function DashboardPage() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary" disabled={submitting || !formData.apiKey}>
+                <button type="submit" className="btn-primary" disabled={submitting || !formData.apiKey || formData.whitelistedUrls.length === 0}>
                   {submitting ? "Creating..." : "Create Key"}
                 </button>
               </div>
@@ -1043,6 +1163,62 @@ export default function DashboardPage() {
                   rows={4}
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="key-edit-whitelisted-urls" className="form-label">
+                  Whitelisted URLs <span className="required">*</span>
+                </label>
+                <div className="whitelisted-urls-input-group">
+                  <input
+                    type="text"
+                    id="key-edit-whitelisted-urls"
+                    className="form-input"
+                    value={newWhitelistedUrlEdit}
+                    onChange={(e) => setNewWhitelistedUrlEdit(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddWhitelistedUrl(true);
+                      }
+                    }}
+                    placeholder="e.g., api.example.com or api.example.com/path"
+                  />
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddWhitelistedUrl(true);
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="form-hint">
+                  At least one URL is required. URLs are treated as wildcards (e.g., "api.example.com" matches "api.example.com/*"). Protocol is not required.
+                </p>
+                {keyFormData.whitelistedUrls.length > 0 && (
+                  <div className="whitelisted-urls-list">
+                    {keyFormData.whitelistedUrls.map((url, index) => (
+                      <div key={index} className="whitelisted-url-item">
+                        <code className="whitelisted-url-value">{url}/*</code>
+                        <button
+                          type="button"
+                          className="whitelisted-url-remove"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveWhitelistedUrl(url, true);
+                          }}
+                          title="Remove URL"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="modal-actions">
                 <button
                   type="button"
@@ -1051,7 +1227,7 @@ export default function DashboardPage() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary" disabled={updatingKey}>
+                <button type="submit" className="btn-primary" disabled={updatingKey || keyFormData.whitelistedUrls.length === 0}>
                   {updatingKey ? "Updating..." : "Update Key"}
                 </button>
               </div>
