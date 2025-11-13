@@ -426,11 +426,6 @@ export default function DashboardPage() {
     <div className="dashboard-container">
       {/* Header */}
       <header className="dashboard-header">
-        <div className="dashboard-header-top">
-          <button className="back-button" onClick={() => navigate("/")}>
-            ← Back to Projects
-          </button>
-        </div>
         <div className="dashboard-title-section">
           <div className="dashboard-title-row">
             <h1 className="dashboard-title">{project.name || "Unnamed Project"}</h1>
