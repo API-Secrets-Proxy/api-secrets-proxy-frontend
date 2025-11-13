@@ -1,7 +1,6 @@
-import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,17 +54,9 @@ export default function HomePage() {
   const userName = user?.fullName || user?.primaryEmailAddress?.emailAddress || "there";
 
   return (
-    <div className="app-layout">
-      <Sidebar />
-      <div className="main-content">
-        {/* Top Right User Button */}
-        <div className="top-right-user-button">
-          <UserButton/>
-        </div>
-
-        <div className="homepage-container">
-          {/* Header Section */}
-          <header className="homepage-header">
+    <div className="homepage-container">
+      {/* Header Section */}
+      <header className="homepage-header">
         <h1 className="hero-title">Welcome back, {userName}!</h1>
         <p className="hero-subtext">
           Manage your API proxy projects and keys from one central dashboard.
@@ -141,12 +132,10 @@ export default function HomePage() {
         )}
       </main>
 
-          {/* Footer */}
-          <footer className="page-footer">
-            © {new Date().getFullYear()} ProxLock. All rights reserved.
-          </footer>
-        </div>
-      </div>
+      {/* Footer */}
+      <footer className="page-footer">
+        © {new Date().getFullYear()} ProxLock. All rights reserved.
+      </footer>
     </div>
   );
 }

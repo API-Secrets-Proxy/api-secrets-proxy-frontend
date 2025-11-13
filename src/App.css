@@ -151,6 +151,7 @@ body {
   padding: 2rem 1.5rem;
   gap: 3rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Homepage Header */
@@ -433,6 +434,7 @@ body {
   padding: 2rem 1.5rem;
   gap: 2rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Dashboard Header */
@@ -1228,11 +1230,14 @@ body {
   margin-left: 280px;
   position: relative;
   transition: margin-left 0.3s ease;
+  width: calc(100% - 280px);
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
+    width: 100%;
   }
 }
 
