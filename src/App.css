@@ -1974,6 +1974,7 @@ body {
   .main-content {
     margin-left: 0;
     width: 100%;
+    padding-top: 3rem; /* Add padding to prevent overlap with mobile toggle button */
   }
 }
 
@@ -2063,6 +2064,12 @@ body {
 .sidebar-header {
   padding: 2rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .sidebar-header {
+    padding-top: 5rem; /* Add padding to prevent overlap with mobile toggle button */
+  }
 }
 
 .sidebar-logo {
