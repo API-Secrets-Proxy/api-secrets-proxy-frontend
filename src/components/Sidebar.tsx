@@ -22,6 +22,7 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -40,8 +41,14 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
       if (res.ok) {
         const data = await res.json();
         setProjects(Array.isArray(data) ? data : []);
+        setError(null);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch projects: ${res.statusText}`);
       }
     } catch (err) {
+      const errorMessage = (err as Error).message || "Failed to load projects";
+      setError(errorMessage);
       console.error("Error fetching projects:", err);
     } finally {
       setLoading(false);
@@ -122,6 +129,10 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
               <div className="sidebar-loading">
                 <div className="sidebar-spinner"></div>
                 <span>Loading...</span>
+              </div>
+            ) : error ? (
+              <div className="sidebar-error">
+                <p className="sidebar-error-message">⚠️ {error}</p>
               </div>
             ) : projects.length === 0 ? (
               <div className="sidebar-empty">

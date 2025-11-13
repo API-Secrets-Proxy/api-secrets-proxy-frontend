@@ -2,6 +2,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useProjectsContext } from "../contexts/ProjectsContext";
+import ErrorToast from "../components/ErrorToast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -77,6 +78,7 @@ export default function DashboardPage() {
   const [loadingAvailableKeys, setLoadingAvailableKeys] = useState(false);
   const [selectedKeyToLink, setSelectedKeyToLink] = useState<string>("");
   const [linkingKey, setLinkingKey] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
 
   const handleFileRead = (file: File) => {
     if (file && (file.name.endsWith('.pem') || file.name.endsWith('.key') || file.name.endsWith('.txt') || file.name.endsWith('.p8'))) {
@@ -200,11 +202,12 @@ export default function DashboardPage() {
         // Remove the key from the list
         setKeys(keys.filter((key) => key.id !== keyId));
       } else {
-        throw new Error("Failed to delete key");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to delete key: ${res.statusText}`);
       }
     } catch (err) {
       console.error("Error deleting key:", err);
-      alert("Failed to delete key. Please try again.");
+      setErrorToast((err as Error).message || "Failed to delete key. Please try again.");
     }
   };
 
@@ -231,7 +234,8 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to create key: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to create key: ${res.statusText}`);
       }
 
       const newKey = await res.json();
@@ -265,7 +269,7 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error("Error creating key:", err);
-      alert("Failed to create key. Please try again.");
+      setErrorToast((err as Error).message || "Failed to create key. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -278,7 +282,7 @@ export default function DashboardPage() {
       handleClosePartialKey();
     } catch (err) {
       console.error("Failed to copy:", err);
-      alert("Failed to copy to clipboard. Please copy manually.");
+      setErrorToast("Failed to copy to clipboard. Please copy manually.");
     }
   };
 
@@ -340,7 +344,8 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to update project: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update project: ${res.statusText}`);
       }
 
       const updatedProject = await res.json();
@@ -350,7 +355,7 @@ export default function DashboardPage() {
       refreshProjects();
     } catch (err) {
       console.error("Error updating project:", err);
-      alert("Failed to update project. Please try again.");
+      setErrorToast((err as Error).message || "Failed to update project. Please try again.");
     } finally {
       setUpdatingProject(false);
     }
@@ -399,7 +404,8 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to update key: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update key: ${res.statusText}`);
       }
 
       // Refresh keys list
@@ -420,7 +426,7 @@ export default function DashboardPage() {
       handleCloseEditKey();
     } catch (err) {
       console.error("Error updating key:", err);
-      alert("Failed to update key. Please try again.");
+      setErrorToast((err as Error).message || "Failed to update key. Please try again.");
     } finally {
       setUpdatingKey(false);
     }
@@ -448,7 +454,8 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to delete project: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to delete project: ${res.statusText}`);
       }
 
       // Refresh sidebar
@@ -458,7 +465,7 @@ export default function DashboardPage() {
       navigate("/");
     } catch (err) {
       console.error("Error deleting project:", err);
-      alert("Failed to delete project. Please try again.");
+      setErrorToast((err as Error).message || "Failed to delete project. Please try again.");
     } finally {
       setDeletingProject(false);
     }
@@ -487,7 +494,8 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to upload DeviceCheck key: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to upload DeviceCheck key: ${res.statusText}`);
       }
 
       // Refresh DeviceCheck key
@@ -513,7 +521,7 @@ export default function DashboardPage() {
       handleCloseDeviceCheckModal();
     } catch (err) {
       console.error("Error uploading DeviceCheck key:", err);
-      alert("Failed to upload DeviceCheck key. Please try again.");
+      setErrorToast((err as Error).message || "Failed to upload DeviceCheck key. Please try again.");
     } finally {
       setUploadingDeviceCheck(false);
     }
@@ -620,7 +628,7 @@ export default function DashboardPage() {
       handleCloseDeviceCheckModal();
     } catch (err) {
       console.error("Error linking DeviceCheck key:", err);
-      alert("Failed to link DeviceCheck key. Please try again.");
+      setErrorToast((err as Error).message || "Failed to link DeviceCheck key. Please try again.");
     } finally {
       setLinkingKey(false);
     }
@@ -652,6 +660,12 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-container">
+      {errorToast && (
+        <ErrorToast
+          message={errorToast}
+          onClose={() => setErrorToast(null)}
+        />
+      )}
       {/* Header */}
       <header className="dashboard-header">
         <div className="dashboard-title-section">

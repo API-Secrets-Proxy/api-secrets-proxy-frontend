@@ -2,6 +2,7 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjectsContext } from "../contexts/ProjectsContext";
+import ErrorToast from "../components/ErrorToast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,6 +28,7 @@ export default function HomePage() {
     description: "",
   });
   const [creating, setCreating] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -82,7 +84,8 @@ export default function HomePage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to create project: ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to create project: ${res.statusText}`);
       }
 
       const newProject = await res.json();
@@ -114,7 +117,7 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error("Error creating project:", err);
-      alert("Failed to create project. Please try again.");
+      setErrorToast((err as Error).message || "Failed to create project. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -133,6 +136,12 @@ export default function HomePage() {
 
   return (
     <div className="homepage-container">
+      {errorToast && (
+        <ErrorToast
+          message={errorToast}
+          onClose={() => setErrorToast(null)}
+        />
+      )}
       {/* Header Section */}
       <header className="homepage-header">
         <h1 className="hero-title">Welcome back, {userName}!</h1>
