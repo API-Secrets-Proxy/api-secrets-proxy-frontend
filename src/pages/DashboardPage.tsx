@@ -20,6 +20,12 @@ interface APIKey {
   associationId?: string;
 }
 
+interface DeviceCheckKey {
+  teamID: string;
+  keyID: string;
+  bypassToken: string;
+}
+
 export default function DashboardPage() {
   const { getToken } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
@@ -27,6 +33,7 @@ export default function DashboardPage() {
   const { refreshProjects } = useProjectsContext();
   const [project, setProject] = useState<Project | null>(null);
   const [keys, setKeys] = useState<APIKey[]>([]);
+  const [deviceCheckKey, setDeviceCheckKey] = useState<DeviceCheckKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddKeyModal, setShowAddKeyModal] = useState(false);
@@ -56,6 +63,40 @@ export default function DashboardPage() {
   const [updatingProject, setUpdatingProject] = useState(false);
   const [updatingKey, setUpdatingKey] = useState(false);
   const [deletingProject, setDeletingProject] = useState(false);
+  const [showDeviceCheckModal, setShowDeviceCheckModal] = useState(false);
+  const [isClosingDeviceCheckModal, setIsClosingDeviceCheckModal] = useState(false);
+  const [deviceCheckFormData, setDeviceCheckFormData] = useState({
+    teamID: "",
+    keyID: "",
+    privateKey: "",
+  });
+  const [uploadingDeviceCheck, setUploadingDeviceCheck] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const handleFileRead = (file: File) => {
+    if (file && (file.name.endsWith('.pem') || file.name.endsWith('.key') || file.name.endsWith('.txt') || file.name.endsWith('.p8'))) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        
+        // Auto-fill keyID with filename (without extension and AuthKey_ prefix) if keyID is blank
+        let newKeyID = deviceCheckFormData.keyID;
+        if (!deviceCheckFormData.keyID.trim()) {
+          let fileNameWithoutExt = file.name.replace(/\.(pem|key|txt|p8)$/i, '');
+          // Remove "AuthKey_" prefix (case-insensitive)
+          fileNameWithoutExt = fileNameWithoutExt.replace(/^AuthKey_/i, '');
+          newKeyID = fileNameWithoutExt;
+        }
+        
+        setDeviceCheckFormData({ 
+          ...deviceCheckFormData, 
+          privateKey: content.trim(),
+          keyID: newKeyID
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,6 +144,26 @@ export default function DashboardPage() {
 
         const keysData = await keysRes.json();
         setKeys(Array.isArray(keysData) ? keysData : []);
+
+        // Fetch DeviceCheck key for this project
+        const deviceCheckRes = await fetch(`${API_URL}/me/projects/${projectId}/device-check/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json; charset=utf-8",
+          },
+          credentials: "include",
+        });
+
+        if (deviceCheckRes.ok) {
+          const deviceCheckData = await deviceCheckRes.json();
+          // Handle both array (legacy) and single object responses
+          if (Array.isArray(deviceCheckData)) {
+            setDeviceCheckKey(deviceCheckData.length > 0 ? deviceCheckData[0] : null);
+          } else {
+            setDeviceCheckKey(deviceCheckData || null);
+          }
+        }
       } catch (err) {
         setError((err as Error).message);
         console.error("Error fetching data:", err);
@@ -398,6 +459,71 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUploadDeviceCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId) return;
+
+    try {
+      setUploadingDeviceCheck(true);
+      const token = await getToken({ template: "default" });
+
+      const res = await fetch(`${API_URL}/me/projects/${projectId}/device-check`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          teamID: deviceCheckFormData.teamID,
+          keyID: deviceCheckFormData.keyID,
+          privateKey: deviceCheckFormData.privateKey,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to upload DeviceCheck key: ${res.statusText}`);
+      }
+
+      // Refresh DeviceCheck key
+      const deviceCheckRes = await fetch(`${API_URL}/me/projects/${projectId}/device-check/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
+
+      if (deviceCheckRes.ok) {
+        const deviceCheckData = await deviceCheckRes.json();
+        // Handle both array (legacy) and single object responses
+        if (Array.isArray(deviceCheckData)) {
+          setDeviceCheckKey(deviceCheckData.length > 0 ? deviceCheckData[0] : null);
+        } else {
+          setDeviceCheckKey(deviceCheckData || null);
+        }
+      }
+
+      handleCloseDeviceCheckModal();
+    } catch (err) {
+      console.error("Error uploading DeviceCheck key:", err);
+      alert("Failed to upload DeviceCheck key. Please try again.");
+    } finally {
+      setUploadingDeviceCheck(false);
+    }
+  };
+
+  const handleCloseDeviceCheckModal = () => {
+    setIsClosingDeviceCheckModal(true);
+    setTimeout(() => {
+      setShowDeviceCheckModal(false);
+      setIsClosingDeviceCheckModal(false);
+      setDeviceCheckFormData({ teamID: "", keyID: "", privateKey: "" });
+      setIsDraggingOver(false);
+    }, 300);
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -522,6 +648,59 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* DeviceCheck Key Section */}
+        <div className="devicecheck-section">
+          <div className="devicecheck-header">
+            <h2 className="section-title">Apple Device Check</h2>
+            <button className="btn-primary" onClick={() => setShowDeviceCheckModal(true)}>
+              {deviceCheckKey ? "Update Key" : "+ Upload DeviceCheck Key"}
+            </button>
+          </div>
+
+          {!deviceCheckKey ? (
+            <div className="empty-devicecheck-state">
+              <div className="empty-icon">🍎</div>
+              <h3>No Device Check key yet</h3>
+              <p>Upload your Apple Device Check private key to enable device verification.</p>
+            </div>
+          ) : (
+            <div className="devicecheck-card">
+              <div className="devicecheck-card-header">
+                <h3 className="devicecheck-team-id">Team ID: {deviceCheckKey.teamID}</h3>
+              </div>
+              <div className="devicecheck-details">
+                <div className="devicecheck-detail-row">
+                  <span className="devicecheck-detail-label">Key ID:</span>
+                  <code className="devicecheck-detail-value">{deviceCheckKey.keyID}</code>
+                </div>
+                <div className="devicecheck-detail-row">
+                  <span className="devicecheck-detail-label">Bypass Token:</span>
+                  <div className="devicecheck-value-container">
+                    <code className="devicecheck-detail-value">{deviceCheckKey.bypassToken}</code>
+                    <button
+                      className="devicecheck-copy-btn"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(deviceCheckKey.bypassToken);
+                          // You could add a toast notification here if desired
+                        } catch (err) {
+                          console.error("Failed to copy:", err);
+                          alert("Failed to copy to clipboard. Please copy manually.");
+                        }
+                      }}
+                      title="Copy bypass token"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.5 4.5C5.5 3.67157 6.17157 3 7 3H10.5C11.3284 3 12 3.67157 12 4.5V8.5C12 9.32843 11.3284 10 10.5 10H9.5M5.5 4.5C5.5 3.67157 6.17157 3 7 3H10.5C11.3284 3 12 3.67157 12 4.5V8.5C12 9.32843 11.3284 10 10.5 10H9.5M5.5 4.5H4.5C3.67157 4.5 3 5.17157 3 6V11.5C3 12.3284 3.67157 13 4.5 13H9C9.82843 13 10.5 12.3284 10.5 11.5V10.5M5.5 4.5V6C5.5 6.82843 6.17157 7.5 7 7.5H9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -765,6 +944,125 @@ export default function DashboardPage() {
                 Copy & Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload DeviceCheck Key Modal */}
+      {showDeviceCheckModal && (
+        <div className={`modal-overlay ${isClosingDeviceCheckModal ? 'closing' : ''}`} onClick={handleCloseDeviceCheckModal}>
+          <div className={`modal-content ${isClosingDeviceCheckModal ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Upload Device Check Key</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleCloseDeviceCheckModal}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUploadDeviceCheck} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="devicecheck-teamid" className="form-label">
+                  Team ID <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="devicecheck-teamid"
+                  className="form-input"
+                  value={deviceCheckFormData.teamID}
+                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, teamID: e.target.value })}
+                  placeholder="e.g., XYZ789GHI0"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="devicecheck-keyid" className="form-label">
+                  Key ID <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="devicecheck-keyid"
+                  className="form-input"
+                  value={deviceCheckFormData.keyID}
+                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, keyID: e.target.value })}
+                  placeholder="e.g., ABC123DEF4"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="devicecheck-privatekey" className="form-label">
+                  Private Key (PEM format) <span className="required">*</span>
+                </label>
+                <div className="file-upload-container">
+                  <input
+                    type="file"
+                    id="devicecheck-file-upload"
+                    accept=".pem,.key,.txt,.p8"
+                    className="file-upload-input"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleFileRead(file);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="devicecheck-file-upload"
+                    className={`file-upload-label ${isDraggingOver ? 'dragging' : ''}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingOver(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingOver(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingOver(false);
+                      
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) {
+                        handleFileRead(file);
+                      }
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 12V6M9 6L6 9M9 6L12 9M3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>{isDraggingOver ? 'Drop Key File Here' : 'Upload Key File'}</span>
+                  </label>
+                </div>
+                <textarea
+                  id="devicecheck-privatekey"
+                  className="form-textarea"
+                  value={deviceCheckFormData.privateKey}
+                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, privateKey: e.target.value })}
+                  placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+                  rows={8}
+                  required
+                />
+                <p className="form-hint">
+                  Paste your ES256 private key in PEM format here, or upload a .pem, .key, .txt, or .p8 file.
+                </p>
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleCloseDeviceCheckModal}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={uploadingDeviceCheck || !deviceCheckFormData.teamID.trim() || !deviceCheckFormData.keyID.trim() || !deviceCheckFormData.privateKey.trim()}>
+                  {uploadingDeviceCheck ? "Uploading..." : "Upload Key"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
