@@ -184,10 +184,16 @@ body {
 .projects-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.projects-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .section-title {
@@ -201,6 +207,27 @@ body {
   font-size: 0.95rem;
   color: #a0a0b0;
   font-weight: 500;
+}
+
+.project-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 0.5rem;
+  background: rgba(139, 107, 219, 0.2);
+  border: 1px solid rgba(139, 107, 219, 0.3);
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8b6bdb;
+  line-height: 1;
+}
+
+.projects-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 /* Projects Grid - Responsive 2-3 column layout */
