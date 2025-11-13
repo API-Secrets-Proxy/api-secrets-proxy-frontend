@@ -1,5 +1,5 @@
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjectsContext } from "../contexts/ProjectsContext";
 import ErrorToast from "../components/ErrorToast";
@@ -30,38 +30,38 @@ export default function HomePage() {
   const [creating, setCreating] = useState(false);
   const [errorToast, setErrorToast] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = await getToken({ template: "default" });
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = await getToken({ template: "default" });
 
-        const res = await fetch(`${API_URL}/me/projects`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json; charset=utf-8",
-          },
-          credentials: "include",
-        });
+      const res = await fetch(`${API_URL}/me/projects`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch projects: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        setProjects(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError((err as Error).message);
-        console.error("Error fetching projects:", err);
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch projects: ${res.statusText}`);
       }
-    };
 
-    fetchProjects();
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError((err as Error).message);
+      console.error("Error fetching projects:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,10 +159,13 @@ export default function HomePage() {
           </div>
         ) : error ? (
           <div className="error-state">
-            <p className="error-message">⚠️ {error}</p>
+            <p className="error-message">{error}</p>
             <button 
               className="btn-solid" 
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                fetchProjects();
+                refreshProjects();
+              }}
             >
               Retry
             </button>

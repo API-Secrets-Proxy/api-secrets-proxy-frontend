@@ -132,7 +132,7 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
               </div>
             ) : error ? (
               <div className="sidebar-error">
-                <p className="sidebar-error-message">⚠️ {error}</p>
+                <p className="sidebar-error-message">{error}</p>
               </div>
             ) : projects.length === 0 ? (
               <div className="sidebar-empty">

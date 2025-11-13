@@ -272,13 +272,10 @@ export default function DashboardPage() {
         });
 
         if (!projectRes.ok) {
-          // Show 404 page for 404, 403 (forbidden), or any error fetching the project
-          if (projectRes.status === 404 || projectRes.status === 403) {
-            setIsNotFound(true);
-            setLoading(false);
-            return;
-          }
-          throw new Error(`Failed to fetch project: ${projectRes.statusText}`);
+          // Show 404 page for any error fetching the project (404, 403, 500, etc.)
+          setIsNotFound(true);
+          setLoading(false);
+          return;
         }
 
         let projectData;
@@ -292,46 +289,61 @@ export default function DashboardPage() {
         }
         setProject(projectData);
 
-        // Fetch keys
-        const keysRes = await fetch(`${API_URL}/me/projects/${projectId}/keys`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json; charset=utf-8",
-          },
-          credentials: "include",
-        });
+        // Fetch keys - don't fail the whole page if this fails
+        try {
+          const keysRes = await fetch(`${API_URL}/me/projects/${projectId}/keys`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json; charset=utf-8",
+            },
+            credentials: "include",
+          });
 
-        if (!keysRes.ok) {
-          throw new Error(`Failed to fetch keys: ${keysRes.statusText}`);
-        }
-
-        const keysData = await keysRes.json();
-        setKeys(Array.isArray(keysData) ? keysData : []);
-
-        // Fetch DeviceCheck key for this project
-        const deviceCheckRes = await fetch(`${API_URL}/me/projects/${projectId}/device-check/`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json; charset=utf-8",
-          },
-          credentials: "include",
-        });
-
-        if (deviceCheckRes.ok) {
-          const deviceCheckData = await deviceCheckRes.json();
-          // Handle both array (legacy) and single object responses
-          if (Array.isArray(deviceCheckData)) {
-            setDeviceCheckKey(deviceCheckData.length > 0 ? deviceCheckData[0] : null);
+          if (keysRes.ok) {
+            const keysData = await keysRes.json();
+            setKeys(Array.isArray(keysData) ? keysData : []);
           } else {
-            setDeviceCheckKey(deviceCheckData || null);
+            // If keys fail to load, just log it but don't fail the page
+            console.warn("Failed to fetch keys:", keysRes.statusText);
+            setKeys([]);
           }
+        } catch (keysError) {
+          console.warn("Error fetching keys:", keysError);
+          setKeys([]);
         }
+
+        // Fetch DeviceCheck key for this project - don't fail the whole page if this fails
+        try {
+          const deviceCheckRes = await fetch(`${API_URL}/me/projects/${projectId}/device-check/`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json; charset=utf-8",
+            },
+            credentials: "include",
+          });
+
+          if (deviceCheckRes.ok) {
+            const deviceCheckData = await deviceCheckRes.json();
+            // Handle both array (legacy) and single object responses
+            if (Array.isArray(deviceCheckData)) {
+              setDeviceCheckKey(deviceCheckData.length > 0 ? deviceCheckData[0] : null);
+            } else {
+              setDeviceCheckKey(deviceCheckData || null);
+            }
+          }
+        } catch (deviceCheckError) {
+          console.warn("Error fetching device check key:", deviceCheckError);
+          // Don't set device check key if it fails
+        }
+
+        // Project loaded successfully, set loading to false
+        setLoading(false);
       } catch (err) {
-        setError((err as Error).message);
-        console.error("Error fetching data:", err);
-      } finally {
+        // Only show 404 for errors fetching the project itself (network errors, etc.)
+        console.error("Error fetching project:", err);
+        setIsNotFound(true);
         setLoading(false);
       }
     };
@@ -815,7 +827,7 @@ export default function DashboardPage() {
     return (
       <div className="dashboard-container">
         <div className="error-state">
-          <p className="error-message">⚠️ {error || "Project not found"}</p>
+          <p className="error-message">{error || "Project not found"}</p>
           <button className="btn-solid" onClick={() => navigate("/")}>
             Back to Home
           </button>
