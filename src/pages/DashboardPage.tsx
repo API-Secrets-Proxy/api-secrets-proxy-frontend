@@ -738,13 +738,53 @@ export default function DashboardPage() {
                     {key.associationId && (
                       <div className="key-detail-row">
                         <span className="key-detail-label">Association ID:</span>
-                        <code className="key-id">{key.associationId}</code>
+                        <div className="key-id-container">
+                          <code className="key-id">{key.associationId}</code>
+                          <button
+                            className="devicecheck-copy-btn"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(key.associationId || "");
+                              } catch (err) {
+                                console.error("Failed to copy:", err);
+                                alert("Failed to copy to clipboard. Please copy manually.");
+                              }
+                            }}
+                            title="Copy association ID"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     )}
                     {key.id && (
                       <div className="key-detail-row">
                         <span className="key-detail-label">Key ID:</span>
-                        <code className="key-id">{key.id}</code>
+                        <div className="key-id-container">
+                          <code className="key-id">{key.id}</code>
+                          <button
+                            className="devicecheck-copy-btn"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(key.id || "");
+                              } catch (err) {
+                                console.error("Failed to copy:", err);
+                                alert("Failed to copy to clipboard. Please copy manually.");
+                              }
+                            }}
+                            title="Copy key ID"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
