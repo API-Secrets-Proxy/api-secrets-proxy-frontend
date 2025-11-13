@@ -1033,7 +1033,7 @@ export default function DashboardPage() {
                   <code className="partial-key-value">{partialKeyToShow}</code>
                 </div>
                 <p className="partial-key-instruction">
-                  After closing, this key will never be shown again. Use it in your requests with the format: <code>%APIProxy_PARTIAL_KEY:your_partial_key%</code>
+                  After closing, this key will never be shown again. Use it in your requests with the format: <code>%ProxLock_PARTIAL_KEY:your_partial_key%</code>
                 </p>
               </div>
               <div className="partial-key-actions">
