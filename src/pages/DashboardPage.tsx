@@ -796,8 +796,10 @@ export default function DashboardPage() {
                       }}
                       title="Copy bypass token"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5.5 4.5C5.5 3.67157 6.17157 3 7 3H10.5C11.3284 3 12 3.67157 12 4.5V8.5C12 9.32843 11.3284 10 10.5 10H9.5M5.5 4.5C5.5 3.67157 6.17157 3 7 3H10.5C11.3284 3 12 3.67157 12 4.5V8.5C12 9.32843 11.3284 10 10.5 10H9.5M5.5 4.5H4.5C3.67157 4.5 3 5.17157 3 6V11.5C3 12.3284 3.67157 13 4.5 13H9C9.82843 13 10.5 12.3284 10.5 11.5V10.5M5.5 4.5V6C5.5 6.82843 6.17157 7.5 7 7.5H9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
                   </div>
@@ -1025,27 +1027,20 @@ export default function DashboardPage() {
                 This is the only time you'll see your partial key. Copy it now!
               </p>
             </div>
-            <div className="partial-key-content">
-              <label className="form-label">Your Partial Key:</label>
-              <div className="partial-key-display">
-                <code className="partial-key-value">{partialKeyToShow}</code>
-                <button
-                  className="btn-primary copy-partial-btn"
-                  onClick={handleCopyPartialKey}
-                  title="Copy to clipboard"
-                >
-                  📋 Copy
+              <div className="partial-key-content">
+                <label className="form-label">Your Partial Key:</label>
+                <div className="partial-key-display">
+                  <code className="partial-key-value">{partialKeyToShow}</code>
+                </div>
+                <p className="partial-key-instruction">
+                  After closing, this key will never be shown again. Use it in your requests with the format: <code>%APIProxy_PARTIAL_KEY:your_partial_key%</code>
+                </p>
+              </div>
+              <div className="partial-key-actions">
+                <button className="btn-primary" onClick={handleCopyPartialKey}>
+                  Copy & Close
                 </button>
               </div>
-              <p className="partial-key-instruction">
-                After copying, this key will never be shown again. Use it in your requests with the format: <code>%APIProxy_PARTIAL_KEY:your_partial_key%</code>
-              </p>
-            </div>
-            <div className="partial-key-actions">
-              <button className="btn-primary" onClick={handleCopyPartialKey}>
-                Copy & Close
-              </button>
-            </div>
           </div>
         </div>
       )}

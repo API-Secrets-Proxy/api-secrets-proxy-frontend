@@ -1914,8 +1914,6 @@ body {
   word-break: break-all;
   line-height: 1.5;
   margin: 0;
-  animation: pulse 2s ease-in-out infinite;
-  transition: all 0.3s ease;
 }
 
 .copy-partial-btn {
