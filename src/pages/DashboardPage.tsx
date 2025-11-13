@@ -1,6 +1,7 @@
 import { useAuth, UserButton } from "@clerk/clerk-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -380,21 +381,24 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="dashboard-container">
-      {/* Top Right User Button */}
-      <div className="top-right-user-button">
-        <UserButton 
-          appearance={{
-            elements: {
-              userButtonPopoverCard: "clerk-user-button-card",
-              userButtonPopoverActions: "clerk-user-button-actions",
-            },
-          }}
-        />
-      </div>
+    <div className="app-layout">
+      <Sidebar />
+      <div className="main-content">
+        {/* Top Right User Button */}
+        <div className="top-right-user-button">
+          <UserButton 
+            appearance={{
+              elements: {
+                userButtonPopoverCard: "clerk-user-button-card",
+                userButtonPopoverActions: "clerk-user-button-actions",
+              },
+            }}
+          />
+        </div>
 
-      {/* Header */}
-      <header className="dashboard-header">
+        <div className="dashboard-container">
+          {/* Header */}
+          <header className="dashboard-header">
         <div className="dashboard-header-top">
           <button className="back-button" onClick={() => navigate("/")}>
             ← Back to Projects
@@ -728,6 +732,8 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }
