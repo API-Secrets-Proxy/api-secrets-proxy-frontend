@@ -1,6 +1,7 @@
 import { useAuth } from "@clerk/clerk-react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useProjectsContext } from "../contexts/ProjectsContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const { getToken } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { refreshProjects } = useProjectsContext();
   const [project, setProject] = useState<Project | null>(null);
   const [keys, setKeys] = useState<APIKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -277,6 +279,8 @@ export default function DashboardPage() {
       const updatedProject = await res.json();
       setProject(updatedProject);
       handleCloseEditProject();
+      // Refresh sidebar projects list
+      refreshProjects();
     } catch (err) {
       console.error("Error updating project:", err);
       alert("Failed to update project. Please try again.");
@@ -488,11 +492,6 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
-
-      {/* Navigation */}
-      <nav className="dashboard-nav">
-        <Link to="/">Home</Link>
-      </nav>
 
       {/* Add Key Modal */}
       {showAddKeyModal && (

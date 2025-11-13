@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -11,41 +11,49 @@ interface Project {
   keys?: unknown[];
 }
 
-export default function Sidebar() {
+export interface SidebarRef {
+  refreshProjects: () => void;
+}
+
+const Sidebar = forwardRef<SidebarRef>((props, ref) => {
   const { getToken } = useAuth();
   const location = useLocation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const token = await getToken({ template: "default" });
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await getToken({ template: "default" });
 
-        const res = await fetch(`${API_URL}/me/projects`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json; charset=utf-8",
-          },
-          credentials: "include",
-        });
+      const res = await fetch(`${API_URL}/me/projects`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
 
-        if (res.ok) {
-          const data = await res.json();
-          setProjects(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error("Error fetching projects:", err);
-      } finally {
-        setLoading(false);
+      if (res.ok) {
+        const data = await res.json();
+        setProjects(Array.isArray(data) ? data : []);
       }
-    };
-
-    fetchProjects();
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [getToken]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  useImperativeHandle(ref, () => ({
+    refreshProjects: fetchProjects,
+  }));
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -107,7 +115,6 @@ export default function Sidebar() {
           <div className="sidebar-section">
             <div className="sidebar-section-header">
               <h3 className="sidebar-section-title">Projects</h3>
-              <span className="sidebar-section-count">{projects.length}</span>
             </div>
 
             {loading ? (
@@ -137,11 +144,6 @@ export default function Sidebar() {
                       <span className="sidebar-project-name">
                         {project.name || "Unnamed Project"}
                       </span>
-                      {project.keys && project.keys.length > 0 && (
-                        <span className="sidebar-project-badge">
-                          {project.keys.length}
-                        </span>
-                      )}
                     </div>
                   </Link>
                 ))}
@@ -156,5 +158,8 @@ export default function Sidebar() {
       </aside>
     </>
   );
-}
+});
 
+Sidebar.displayName = "Sidebar";
+
+export default Sidebar;
