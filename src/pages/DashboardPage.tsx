@@ -153,6 +153,7 @@ export default function DashboardPage() {
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [newWhitelistedUrl, setNewWhitelistedUrl] = useState("");
   const [newWhitelistedUrlEdit, setNewWhitelistedUrlEdit] = useState("");
+  const [copiedButtonId, setCopiedButtonId] = useState<string | null>(null);
 
   const handleAddWhitelistedUrl = (isEdit: boolean = false) => {
     const url = isEdit ? newWhitelistedUrlEdit : newWhitelistedUrl;
@@ -445,11 +446,13 @@ export default function DashboardPage() {
     }
   };
 
-  const handleCopyPartialKey = async () => {
+  const handleCopyToClipboard = async (text: string, buttonId: string) => {
     try {
-      await navigator.clipboard.writeText(partialKeyToShow);
-      // Close the partial key display after copying with animation
-      handleClosePartialKey();
+      await navigator.clipboard.writeText(text);
+      setCopiedButtonId(buttonId);
+      setTimeout(() => {
+        setCopiedButtonId(null);
+      }, 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
       setErrorToast("Failed to copy to clipboard. Please copy manually.");
@@ -922,22 +925,20 @@ export default function DashboardPage() {
                         <div className="key-id-container">
                           <code className="key-id">{key.associationId}</code>
                           <button
-                            className="devicecheck-copy-btn"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(key.associationId || "");
-                              } catch (err) {
-                                console.error("Failed to copy:", err);
-                                alert("Failed to copy to clipboard. Please copy manually.");
-                              }
-                            }}
-                            title="Copy association ID"
+                            className={`devicecheck-copy-btn ${copiedButtonId === `association-${key.id}` ? 'copied' : ''}`}
+                            onClick={() => handleCopyToClipboard(key.associationId || "", `association-${key.id}`)}
+                            title={copiedButtonId === `association-${key.id}` ? "Copied!" : "Copy association ID"}
                           >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            {copiedButtonId === `association-${key.id}` ? (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            ) : (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -948,22 +949,20 @@ export default function DashboardPage() {
                         <div className="key-id-container">
                           <code className="key-id">{key.id}</code>
                           <button
-                            className="devicecheck-copy-btn"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(key.id || "");
-                              } catch (err) {
-                                console.error("Failed to copy:", err);
-                                alert("Failed to copy to clipboard. Please copy manually.");
-                              }
-                            }}
-                            title="Copy key ID"
+                            className={`devicecheck-copy-btn ${copiedButtonId === `keyid-${key.id}` ? 'copied' : ''}`}
+                            onClick={() => handleCopyToClipboard(key.id || "", `keyid-${key.id}`)}
+                            title={copiedButtonId === `keyid-${key.id}` ? "Copied!" : "Copy key ID"}
                           >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            {copiedButtonId === `keyid-${key.id}` ? (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            ) : (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -1017,23 +1016,20 @@ export default function DashboardPage() {
                   <div className="devicecheck-value-container">
                     <code className="devicecheck-detail-value">{deviceCheckKey.bypassToken}</code>
                     <button
-                      className="devicecheck-copy-btn"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(deviceCheckKey.bypassToken);
-                          // You could add a toast notification here if desired
-                        } catch (err) {
-                          console.error("Failed to copy:", err);
-                          alert("Failed to copy to clipboard. Please copy manually.");
-                        }
-                      }}
-                      title="Copy bypass token"
+                      className={`devicecheck-copy-btn ${copiedButtonId === 'bypass-token' ? 'copied' : ''}`}
+                      onClick={() => handleCopyToClipboard(deviceCheckKey.bypassToken, 'bypass-token')}
+                      title={copiedButtonId === 'bypass-token' ? "Copied!" : "Copy bypass token"}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M9 14l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      {copiedButtonId === 'bypass-token' ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1382,8 +1378,16 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="partial-key-actions">
-                <button className="btn-primary" onClick={handleCopyPartialKey}>
-                  Copy & Close
+                <button 
+                  className={`btn-primary ${copiedButtonId === 'partial-key' ? 'copied' : ''}`}
+                  onClick={async () => {
+                    await handleCopyToClipboard(partialKeyToShow, 'partial-key');
+                    setTimeout(() => {
+                      handleClosePartialKey();
+                    }, 500);
+                  }}
+                >
+                  {copiedButtonId === 'partial-key' ? '✓ Copied!' : 'Copy & Close'}
                 </button>
               </div>
           </div>
