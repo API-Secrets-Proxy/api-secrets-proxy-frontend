@@ -504,6 +504,12 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.dashboard-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .dashboard-title {
   font-size: clamp(2rem, 2vw + 1.5rem, 2.75rem);
   font-weight: 700;
@@ -543,12 +549,93 @@ body {
   height: 18px;
 }
 
+.delete-project-btn {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.delete-project-btn:hover {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.5);
+  color: #ff6b7a;
+  transform: translateY(-1px);
+}
+
+.delete-project-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-project-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .dashboard-description {
   font-size: 1.125rem;
   color: #b0b0c0;
   line-height: 1.6;
   margin: 0;
   max-width: 800px;
+}
+
+/* Dashboard Delete Section */
+.dashboard-delete-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(120, 120, 160, 0.25);
+}
+
+.dashboard-delete-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: rgba(220, 53, 69, 0.05);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-delete-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .dashboard-delete-content .btn-danger {
+    width: 100%;
+  }
+}
+
+.dashboard-delete-info {
+  flex: 1;
+}
+
+.dashboard-delete-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #dc3545;
+  margin: 0 0 0.5rem 0;
+}
+
+.dashboard-delete-description {
+  font-size: 0.9375rem;
+  color: #b0b0c0;
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Dashboard Main */
@@ -1874,10 +1961,15 @@ body {
   transition: all 0.2s ease;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background: rgba(255, 107, 107, 0.2);
   border-color: rgba(255, 107, 107, 0.5);
   color: #ff5252;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Email List */

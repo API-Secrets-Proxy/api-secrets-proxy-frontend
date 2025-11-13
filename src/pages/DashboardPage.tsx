@@ -55,6 +55,7 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [updatingProject, setUpdatingProject] = useState(false);
   const [updatingKey, setUpdatingKey] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -317,7 +318,7 @@ export default function DashboardPage() {
     try {
       setUpdatingKey(true);
       const token = await getToken({ template: "default" });
-      
+
       const res = await fetch(`${API_URL}/me/projects/${projectId}/keys/${editingKeyId}`, {
         method: "PUT",
         headers: {
@@ -356,6 +357,44 @@ export default function DashboardPage() {
       alert("Failed to update key. Please try again.");
     } finally {
       setUpdatingKey(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectId || !project) return;
+
+    const projectName = project.name || "this project";
+    if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone and will delete all associated API keys.`)) {
+      return;
+    }
+
+    try {
+      setDeletingProject(true);
+      const token = await getToken({ template: "default" });
+
+      const res = await fetch(`${API_URL}/me/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete project: ${res.statusText}`);
+      }
+
+      // Refresh sidebar
+      refreshProjects();
+
+      // Navigate back to home
+      navigate("/");
+    } catch (err) {
+      console.error("Error deleting project:", err);
+      alert("Failed to delete project. Please try again.");
+    } finally {
+      setDeletingProject(false);
     }
   };
 
@@ -492,6 +531,25 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {/* Delete Project Section */}
+      <div className="dashboard-delete-section">
+        <div className="dashboard-delete-content">
+          <div className="dashboard-delete-info">
+            <h3 className="dashboard-delete-title">Danger Zone</h3>
+            <p className="dashboard-delete-description">
+              Deleting this project will permanently remove it and all associated API keys. This action cannot be undone.
+            </p>
+          </div>
+          <button
+            className="btn-danger"
+            onClick={handleDeleteProject}
+            disabled={deletingProject}
+          >
+            {deletingProject ? "Deleting..." : "Delete Project"}
+          </button>
+        </div>
+      </div>
 
       {/* Add Key Modal */}
       {showAddKeyModal && (
