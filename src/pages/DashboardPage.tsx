@@ -72,6 +72,11 @@ export default function DashboardPage() {
   });
   const [uploadingDeviceCheck, setUploadingDeviceCheck] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [deviceCheckModalMode, setDeviceCheckModalMode] = useState<"upload" | "link">("upload");
+  const [availableDeviceCheckKeys, setAvailableDeviceCheckKeys] = useState<DeviceCheckKey[]>([]);
+  const [loadingAvailableKeys, setLoadingAvailableKeys] = useState(false);
+  const [selectedKeyToLink, setSelectedKeyToLink] = useState<string>("");
+  const [linkingKey, setLinkingKey] = useState(false);
 
   const handleFileRead = (file: File) => {
     if (file && (file.name.endsWith('.pem') || file.name.endsWith('.key') || file.name.endsWith('.txt') || file.name.endsWith('.p8'))) {
@@ -521,7 +526,104 @@ export default function DashboardPage() {
       setIsClosingDeviceCheckModal(false);
       setDeviceCheckFormData({ teamID: "", keyID: "", privateKey: "" });
       setIsDraggingOver(false);
+      setDeviceCheckModalMode("upload");
+      setSelectedKeyToLink("");
+      setAvailableDeviceCheckKeys([]);
     }, 300);
+  };
+
+  const handleDeviceCheckModalModeChange = async (mode: "upload" | "link") => {
+    setDeviceCheckModalMode(mode);
+    
+    if (mode === "link") {
+      setLoadingAvailableKeys(true);
+      setSelectedKeyToLink("");
+
+      try {
+        const token = await getToken({ template: "default" });
+        const res = await fetch(`${API_URL}/me/device-check/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json; charset=utf-8",
+          },
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableDeviceCheckKeys(Array.isArray(data) ? data : []);
+        } else {
+          console.error("Failed to fetch available DeviceCheck keys");
+          setAvailableDeviceCheckKeys([]);
+        }
+      } catch (err) {
+        console.error("Error fetching available DeviceCheck keys:", err);
+        setAvailableDeviceCheckKeys([]);
+      } finally {
+        setLoadingAvailableKeys(false);
+      }
+    }
+  };
+
+  const handleLinkKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !selectedKeyToLink) return;
+
+    const selectedKey = availableDeviceCheckKeys.find(
+      (key) => `${key.teamID}-${key.keyID}` === selectedKeyToLink
+    );
+
+    if (!selectedKey) return;
+
+    try {
+      setLinkingKey(true);
+      const token = await getToken({ template: "default" });
+
+      const res = await fetch(`${API_URL}/me/projects/${projectId}/device-check`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          teamID: selectedKey.teamID,
+          keyID: selectedKey.keyID,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to link DeviceCheck key: ${res.statusText}`);
+      }
+
+      // Refresh DeviceCheck key
+      const deviceCheckRes = await fetch(`${API_URL}/me/projects/${projectId}/device-check/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
+
+      if (deviceCheckRes.ok) {
+        const deviceCheckData = await deviceCheckRes.json();
+        // Handle both array (legacy) and single object responses
+        if (Array.isArray(deviceCheckData)) {
+          setDeviceCheckKey(deviceCheckData.length > 0 ? deviceCheckData[0] : null);
+        } else {
+          setDeviceCheckKey(deviceCheckData || null);
+        }
+      }
+
+      handleCloseDeviceCheckModal();
+    } catch (err) {
+      console.error("Error linking DeviceCheck key:", err);
+      alert("Failed to link DeviceCheck key. Please try again.");
+    } finally {
+      setLinkingKey(false);
+    }
   };
 
   if (loading) {
@@ -948,12 +1050,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Upload DeviceCheck Key Modal */}
+      {/* Upload/Link DeviceCheck Key Modal */}
       {showDeviceCheckModal && (
         <div className={`modal-overlay ${isClosingDeviceCheckModal ? 'closing' : ''}`} onClick={handleCloseDeviceCheckModal}>
           <div className={`modal-content ${isClosingDeviceCheckModal ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Upload Device Check Key</h2>
+              <h2 className="modal-title">
+                {deviceCheckModalMode === "upload" ? "Upload Device Check Key" : "Link Device Check Key"}
+              </h2>
               <button
                 className="modal-close-btn"
                 onClick={handleCloseDeviceCheckModal}
@@ -961,108 +1065,210 @@ export default function DashboardPage() {
                 ×
               </button>
             </div>
-            <form onSubmit={handleUploadDeviceCheck} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="devicecheck-teamid" className="form-label">
-                  Team ID <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="devicecheck-teamid"
-                  className="form-input"
-                  value={deviceCheckFormData.teamID}
-                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, teamID: e.target.value })}
-                  placeholder="e.g., XYZ789GHI0"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="devicecheck-keyid" className="form-label">
-                  Key ID <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="devicecheck-keyid"
-                  className="form-input"
-                  value={deviceCheckFormData.keyID}
-                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, keyID: e.target.value })}
-                  placeholder="e.g., ABC123DEF4"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="devicecheck-privatekey" className="form-label">
-                  Private Key (PEM format) <span className="required">*</span>
-                </label>
-                <div className="file-upload-container">
-                  <input
-                    type="file"
-                    id="devicecheck-file-upload"
-                    accept=".pem,.key,.txt,.p8"
-                    className="file-upload-input"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleFileRead(file);
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="devicecheck-file-upload"
-                    className={`file-upload-label ${isDraggingOver ? 'dragging' : ''}`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsDraggingOver(true);
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsDraggingOver(false);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsDraggingOver(false);
-                      
-                      const file = e.dataTransfer.files?.[0];
-                      if (file) {
-                        handleFileRead(file);
-                      }
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M9 12V6M9 6L6 9M9 6L12 9M3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span>{isDraggingOver ? 'Drop Key File Here' : 'Upload Key File'}</span>
+            
+            {/* Mode Toggle */}
+            <div className="modal-mode-toggle">
+              <button
+                type="button"
+                className={`modal-mode-btn ${deviceCheckModalMode === "upload" ? "active" : ""}`}
+                onClick={() => handleDeviceCheckModalModeChange("upload")}
+              >
+                Upload New Key
+              </button>
+              <button
+                type="button"
+                className={`modal-mode-btn ${deviceCheckModalMode === "link" ? "active" : ""}`}
+                onClick={() => handleDeviceCheckModalModeChange("link")}
+              >
+                Link Existing Key
+              </button>
+            </div>
+
+            {deviceCheckModalMode === "upload" ? (
+              <form onSubmit={handleUploadDeviceCheck} className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="devicecheck-teamid" className="form-label">
+                    Team ID <span className="required">*</span>
                   </label>
+                  <input
+                    type="text"
+                    id="devicecheck-teamid"
+                    className="form-input"
+                    value={deviceCheckFormData.teamID}
+                    onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, teamID: e.target.value })}
+                    placeholder="e.g., XYZ789GHI0"
+                    required
+                  />
                 </div>
-                <textarea
-                  id="devicecheck-privatekey"
-                  className="form-textarea"
-                  value={deviceCheckFormData.privateKey}
-                  onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, privateKey: e.target.value })}
-                  placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-                  rows={8}
-                  required
-                />
-                <p className="form-hint">
-                  Paste your ES256 private key in PEM format here, or upload a .pem, .key, .txt, or .p8 file.
-                </p>
-              </div>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={handleCloseDeviceCheckModal}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={uploadingDeviceCheck || !deviceCheckFormData.teamID.trim() || !deviceCheckFormData.keyID.trim() || !deviceCheckFormData.privateKey.trim()}>
-                  {uploadingDeviceCheck ? "Uploading..." : "Upload Key"}
-                </button>
-              </div>
-            </form>
+                <div className="form-group">
+                  <label htmlFor="devicecheck-keyid" className="form-label">
+                    Key ID <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="devicecheck-keyid"
+                    className="form-input"
+                    value={deviceCheckFormData.keyID}
+                    onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, keyID: e.target.value })}
+                    placeholder="e.g., ABC123DEF4"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="devicecheck-privatekey" className="form-label">
+                    Private Key (PEM format) <span className="required">*</span>
+                  </label>
+                  <div className="file-upload-container">
+                    <input
+                      type="file"
+                      id="devicecheck-file-upload"
+                      accept=".pem,.key,.txt,.p8"
+                      className="file-upload-input"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleFileRead(file);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="devicecheck-file-upload"
+                      className={`file-upload-label ${isDraggingOver ? 'dragging' : ''}`}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingOver(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingOver(false);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingOver(false);
+                        
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                          handleFileRead(file);
+                        }
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12V6M9 6L6 9M9 6L12 9M3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>{isDraggingOver ? 'Drop Key File Here' : 'Upload Key File'}</span>
+                    </label>
+                  </div>
+                  <textarea
+                    id="devicecheck-privatekey"
+                    className="form-textarea"
+                    value={deviceCheckFormData.privateKey}
+                    onChange={(e) => setDeviceCheckFormData({ ...deviceCheckFormData, privateKey: e.target.value })}
+                    placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+                    rows={8}
+                    required
+                  />
+                  <p className="form-hint">
+                    Paste your ES256 private key in PEM format here, or upload a .pem, .key, .txt, or .p8 file.
+                  </p>
+                </div>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleCloseDeviceCheckModal}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary" disabled={uploadingDeviceCheck || !deviceCheckFormData.teamID.trim() || !deviceCheckFormData.keyID.trim() || !deviceCheckFormData.privateKey.trim()}>
+                    {uploadingDeviceCheck ? "Uploading..." : "Upload Key"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleLinkKey} className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="link-key-select" className="form-label">
+                    Select Key <span className="required">*</span>
+                  </label>
+                  {loadingAvailableKeys ? (
+                    <div className="form-loading">
+                      <div className="spinner"></div>
+                      <span>Loading available keys...</span>
+                    </div>
+                  ) : availableDeviceCheckKeys.length === 0 ? (
+                    <div className="form-empty">
+                      <p>No DeviceCheck keys available. Please upload a key first.</p>
+                    </div>
+                  ) : (
+                    <div className="custom-key-selector-inline">
+                      {availableDeviceCheckKeys.map((key) => {
+                        const keyValue = `${key.teamID}-${key.keyID}`;
+                        const isSelected = selectedKeyToLink === keyValue;
+                        return (
+                          <button
+                            key={keyValue}
+                            type="button"
+                            className={`custom-key-selector-option-inline ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedKeyToLink(keyValue);
+                            }}
+                          >
+                            <div className="custom-key-option-content">
+                              <div className="custom-key-option-header">
+                                <span className="custom-key-option-label">Team ID</span>
+                                <code className="custom-key-option-value">{key.teamID}</code>
+                                <span className="custom-key-option-label" style={{ marginLeft: '1rem' }}>Key ID</span>
+                                <code className="custom-key-option-value">{key.keyID}</code>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="custom-key-option-check"
+                              >
+                                <path
+                                  d="M16 5L7.5 13.5L4 10"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <p className="form-hint">
+                    Select an existing DeviceCheck key to link to this project. This will copy the key from your account.
+                  </p>
+                </div>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleCloseDeviceCheckModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={linkingKey || !selectedKeyToLink || availableDeviceCheckKeys.length === 0}
+                  >
+                    {linkingKey ? "Linking..." : "Link Key"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
