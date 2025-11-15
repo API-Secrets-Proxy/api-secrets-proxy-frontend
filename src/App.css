@@ -2630,15 +2630,16 @@ body {
 .sidebar-user-button::before {
   content: '';
   position: absolute;
-  top: -8px;
+  top: -20px;
   left: 0;
   right: 0;
-  height: 8px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+  height: 20px;
+  background: linear-gradient(to top, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.08) 50%, transparent 100%);
   pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 0.2s ease;
+  filter: blur(2px);
 }
 
 .sidebar-user-button.has-content-above::before {
@@ -3675,3 +3676,5 @@ body {
   font-size: 0.875rem;
   white-space: nowrap;
 }
+
+
