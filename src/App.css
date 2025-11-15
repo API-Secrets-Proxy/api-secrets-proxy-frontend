@@ -2637,6 +2637,12 @@ body {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
   pointer-events: none;
   z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-user-button.has-content-above::before {
+  opacity: 1;
 }
 
 .sidebar-usage-container {
@@ -3399,7 +3405,6 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid var(--color-warning-border);
   border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
@@ -3423,7 +3428,6 @@ body {
   border-radius: 0.5rem;
   color: var(--text-primary);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .usage-alert-text {
@@ -3431,21 +3435,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .usage-alert-text strong {
   color: var(--text-primary);
   font-size: 0.9375rem;
   font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .usage-alert-text span {
   color: var(--text-secondary);
   font-size: 0.875rem;
   line-height: 1.4;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 768px) {

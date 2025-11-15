@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/clerk-react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useRef } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,6 +26,8 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   const [currentRequestUsage, setCurrentRequestUsage] = useState<number | null>(null);
   const [requestLimit, setRequestLimit] = useState<number | null>(null);
   const [isPayingCustomer, setIsPayingCustomer] = useState<boolean | null>(null);
+  const [hasScrollableContent, setHasScrollableContent] = useState(false);
+  const sidebarNavRef = useRef<HTMLElement | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -100,6 +102,49 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
     fetchUserData();
   }, [fetchUserData]);
 
+  // Check if sidebar nav has scrollable content
+  useEffect(() => {
+    const checkScrollable = () => {
+      const nav = sidebarNavRef.current;
+      if (nav) {
+        // Check if there's scrollable content (scrollHeight > clientHeight)
+        const hasScroll = nav.scrollHeight > nav.clientHeight;
+        
+        if (hasScroll) {
+          // Check if we're at the bottom (no more content below)
+          const isAtBottom = nav.scrollTop + nav.clientHeight >= nav.scrollHeight - 1; // -1 for rounding tolerance
+          // Show shadow if there's scrollable content AND we're not at the bottom
+          setHasScrollableContent(!isAtBottom);
+        } else {
+          // No scrollable content, hide shadow
+          setHasScrollableContent(false);
+        }
+      }
+    };
+
+    const nav = sidebarNavRef.current;
+    if (nav) {
+      // Check initially
+      checkScrollable();
+      
+      // Check on scroll
+      nav.addEventListener('scroll', checkScrollable);
+      
+      // Check on resize (content might change)
+      window.addEventListener('resize', checkScrollable);
+      
+      // Use ResizeObserver to detect content changes
+      const resizeObserver = new ResizeObserver(checkScrollable);
+      resizeObserver.observe(nav);
+      
+      return () => {
+        nav.removeEventListener('scroll', checkScrollable);
+        window.removeEventListener('resize', checkScrollable);
+        resizeObserver.disconnect();
+      };
+    }
+  }, [projects, loading]);
+
   useImperativeHandle(ref, () => ({
     refreshProjects: fetchProjects,
   }));
@@ -147,7 +192,7 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
           </Link>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" ref={sidebarNavRef}>
           <Link
             to="/"
             className={`sidebar-nav-item ${isActive("/") ? "active" : ""}`}
@@ -206,7 +251,7 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
         </nav>
 
         <div className="sidebar-bottom">
-          <div className="sidebar-user-button">
+          <div className={`sidebar-user-button ${hasScrollableContent ? 'has-content-above' : ''}`}>
             <UserButton showName={false}/>
             {currentRequestUsage !== null && requestLimit !== null && (
               <div className="sidebar-usage-container">
