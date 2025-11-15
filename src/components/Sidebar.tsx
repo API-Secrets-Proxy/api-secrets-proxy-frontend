@@ -23,6 +23,8 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentRequestUsage, setCurrentRequestUsage] = useState<number | null>(null);
+  const [requestLimit, setRequestLimit] = useState<number | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -58,6 +60,33 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      const token = await getToken({ template: "default" });
+
+      const res = await fetch(`${API_URL}/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const userData = await res.json();
+        setCurrentRequestUsage(userData.currentRequestUsage ?? null);
+        setRequestLimit(userData.requestLimit ?? null);
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   useImperativeHandle(ref, () => ({
     refreshProjects: fetchProjects,
@@ -166,6 +195,12 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
 
         <div className="sidebar-user-button">
           <UserButton showName={false}/>
+          {currentRequestUsage !== null && requestLimit !== null && (
+            <div className="sidebar-usage-container">
+              <span className="sidebar-usage-label">Requests</span>
+              <span className="sidebar-usage-badge">{currentRequestUsage}/{requestLimit}</span>
+            </div>
+          )}
         </div>
 
         <div className="sidebar-footer">
