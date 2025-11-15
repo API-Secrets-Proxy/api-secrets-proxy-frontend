@@ -25,6 +25,7 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
   const [error, setError] = useState<string | null>(null);
   const [currentRequestUsage, setCurrentRequestUsage] = useState<number | null>(null);
   const [requestLimit, setRequestLimit] = useState<number | null>(null);
+  const [isPayingCustomer, setIsPayingCustomer] = useState<boolean | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -78,6 +79,17 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
         const userData = await res.json();
         setCurrentRequestUsage(userData.currentRequestUsage ?? null);
         setRequestLimit(userData.requestLimit ?? null);
+        // Check if user is a paying customer
+        // First check if there's an explicit subscription status field
+        if (userData.subscriptionStatus !== undefined) {
+          setIsPayingCustomer(userData.subscriptionStatus === 'active' || userData.subscriptionStatus === 'paid');
+        } else if (userData.isPayingCustomer !== undefined) {
+          setIsPayingCustomer(userData.isPayingCustomer);
+        } else {
+          // Infer from requestLimit - typically free users have lower limits (e.g., <= 1000)
+          // Adjust this threshold based on your actual free tier limit
+          setIsPayingCustomer(userData.requestLimit ? userData.requestLimit > 1000 : false);
+        }
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
@@ -193,18 +205,44 @@ const Sidebar = forwardRef<SidebarRef>((_props, ref) => {
           </div>
         </nav>
 
-        <div className="sidebar-user-button">
-          <UserButton showName={false}/>
-          {currentRequestUsage !== null && requestLimit !== null && (
-            <div className="sidebar-usage-container">
-              <span className="sidebar-usage-label">Requests</span>
-              <span className="sidebar-usage-badge">{currentRequestUsage}/{requestLimit}</span>
-            </div>
-          )}
-        </div>
+        <div className="sidebar-bottom">
+          <div className="sidebar-user-button">
+            <UserButton showName={false}/>
+            {currentRequestUsage !== null && requestLimit !== null && (
+              <div className="sidebar-usage-container">
+                <span className="sidebar-usage-label">Requests</span>
+                <span className="sidebar-usage-badge">{currentRequestUsage}/{requestLimit}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="sidebar-footer">
-          <p className="sidebar-footer-text">© {new Date().getFullYear()} ProxLock</p>
+          <div className="sidebar-subscription-section">
+            <Link
+              to="/pricing"
+              className="sidebar-subscription-button"
+              onClick={() => setIsMobileOpen(false)}
+            >
+              {isPayingCustomer ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1L10.5 5.5L15.5 6.5L12 9.5L12.5 14.5L8 12L3.5 14.5L4 9.5L0.5 6.5L5.5 5.5L8 1Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  </svg>
+                  <span>Manage Subscription</span>
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1L10.5 5.5L15.5 6.5L12 9.5L12.5 14.5L8 12L3.5 14.5L4 9.5L0.5 6.5L5.5 5.5L8 1Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  </svg>
+                  <span>Upgrade</span>
+                </>
+              )}
+            </Link>
+          </div>
+
+          <div className="sidebar-footer">
+            <p className="sidebar-footer-text">© {new Date().getFullYear()} ProxLock</p>
+          </div>
         </div>
       </aside>
     </>

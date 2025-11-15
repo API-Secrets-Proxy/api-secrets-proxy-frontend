@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import PricingPage from "./pages/PricingPage";
 import Sidebar, { type SidebarRef } from "./components/Sidebar";
+import UpgradeBanner from "./components/UpgradeBanner";
 import { ProjectsProvider } from "./contexts/ProjectsContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -23,9 +25,11 @@ function AppWithSidebar() {
       <div className="app-layout">
         <Sidebar ref={sidebarRef} />
         <div className="main-content">
+          <UpgradeBanner />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/projects/:projectId" element={<DashboardPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
