@@ -995,6 +995,32 @@ export default function DashboardPage() {
             </button>
           </div>
 
+          {/* iOS SDK Setup Guide Info Alert */}
+          <div className="info-alert">
+            <div className="info-alert-content">
+              <div className="info-alert-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2ZM10 14C9.45 14 9 13.55 9 13V9C9 8.45 9.45 8 10 8C10.55 8 11 8.45 11 9V13C11 13.55 10.55 14 10 14ZM9 6H11V4H9V6Z" fill="currentColor"/>
+                </svg>
+              </div>
+              <div className="info-alert-text">
+                <strong>Apple Platform Setup Guide</strong>
+                <span>
+                  Need help setting up for iOS, macOS, or other Apple platforms? Check out our{" "}
+                  <a 
+                    href="https://docs.proxlock.dev/ios-sdk/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="info-alert-link"
+                  >
+                    iOS SDK setup guide
+                  </a>
+                  .
+                </span>
+              </div>
+            </div>
+          </div>
+
           {!deviceCheckKey ? (
             <div className="empty-devicecheck-state">
               <div className="empty-icon">🍎</div>
