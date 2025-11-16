@@ -68,9 +68,7 @@ export default function UpgradeBanner() {
     <div className="upgrade-banner">
       <div className="upgrade-banner-content">
         <div className="upgrade-banner-icon">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 2L2 7V17H8V12H12V17H18V7L10 2Z" fill="currentColor"/>
-          </svg>
+          <span className="material-symbols-outlined">warning</span>
         </div>
         <div className="upgrade-banner-text">
           <strong>Low Request Limit</strong>
