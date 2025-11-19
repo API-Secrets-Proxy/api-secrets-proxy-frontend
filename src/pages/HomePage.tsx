@@ -2,6 +2,7 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjectsContext } from "../contexts/ProjectsContext";
+import { useSignupContext } from "../contexts/SignupContext";
 import ErrorToast from "../components/ErrorToast";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -133,6 +134,7 @@ export default function HomePage() {
   };
 
   const userName = user?.fullName || user?.primaryEmailAddress?.emailAddress || "there";
+  const { isNewSignup } = useSignupContext();
 
   return (
     <div className="homepage-container">
@@ -144,7 +146,7 @@ export default function HomePage() {
       )}
       {/* Header Section */}
       <header className="homepage-header">
-        <h1 className="hero-title">Welcome back, {userName}!</h1>
+        <h1 className="hero-title">{isNewSignup ? "Welcome" : "Welcome back"}, {userName}!</h1>
         <p className="hero-subtext">
           Manage your API proxy projects and keys from one central dashboard.
         </p>

@@ -1,6 +1,6 @@
 import { SignedIn, SignedOut, RedirectToSignIn, useAuth, useUser } from "@clerk/clerk-react";
 import { Routes, Route } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -8,6 +8,7 @@ import PricingPage from "./pages/PricingPage";
 import Sidebar, { type SidebarRef } from "./components/Sidebar";
 import UpgradeBanner from "./components/UpgradeBanner";
 import { ProjectsProvider } from "./contexts/ProjectsContext";
+import { SignupProvider, useSignupContext } from "./contexts/SignupContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -40,26 +41,36 @@ function AppWithSidebar() {
 
 export default function AuthRouter() {
   const { getToken } = useAuth();
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [justRegistered, setJustRegistered] = useState(false);
 
   const createUser = async () => {
     try {
       const token = await getToken({ template: "default" });
 
-      await fetch(`${API_URL}/me`, {
+      const res = await fetch(`${API_URL}/me`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
         credentials: "include" // optional if using cookies
       });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setJustRegistered(data.justRegistered === true);
+      }
+      setAccountCreated(true);
     } catch (err) {
+      // Even if there's an error, set accountCreated to true to avoid blocking the app
+      setAccountCreated(true);
     }
   };
 
   const { isLoaded, isSignedIn } = useUser();
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-      createUser();
+    createUser();
   }, [isLoaded, isSignedIn]);
 
   return (
@@ -69,8 +80,29 @@ export default function AuthRouter() {
       </SignedOut>
 
       <SignedIn>
-        <AppWithSidebar />
+        {accountCreated ? (
+          <SignupProvider>
+            <AppWithSidebarWrapper justRegistered={justRegistered} />
+          </SignupProvider>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Setting up your account...</p>
+            </div>
+          </div>
+        )}
       </SignedIn>
     </div>
   );
+}
+
+function AppWithSidebarWrapper({ justRegistered }: { justRegistered: boolean }) {
+  const { setIsNewSignup } = useSignupContext();
+
+  useEffect(() => {
+    setIsNewSignup(justRegistered);
+  }, [justRegistered, setIsNewSignup]);
+
+  return <AppWithSidebar />;
 }
